@@ -6,7 +6,7 @@ require_once __DIR__ . '/../layout/kiosk_header.php';
 <div class="max-w-2xl mx-auto">
   <!-- Step Indicator -->
   <div class="flex items-center justify-center mb-8">
-    <?php $steps = [['num'=>1,'label'=>'สแกนบัตร'],['num'=>2,'label'=>'สแกน iPad'],['num'=>3,'label'=>'ยืนยัน']]; ?>
+    <?php $steps = [['num'=>1,'label'=>'ข้อมูลผู้ยืม'],['num'=>2,'label'=>'สแกน iPad'],['num'=>3,'label'=>'ยืนยัน']]; ?>
     <?php foreach ($steps as $i => $step): ?>
       <div class="flex items-center <?= $i > 0 ? '' : '' ?>">
         <div class="flex flex-col items-center">
@@ -29,52 +29,49 @@ require_once __DIR__ . '/../layout/kiosk_header.php';
     <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm mb-4">
       <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
         <span class="w-7 h-7 bg-indigo-500 text-white rounded-full text-sm flex items-center justify-center font-bold">1</span>
-        สแกนบัตรประจำตัว
+        ข้อมูลผู้ยืม
       </h2>
-      <p class="text-slate-500 dark:text-slate-400 text-sm mb-5">สแกน Barcode บัตรนักเรียน หรือบัตรประจำตัวครู</p>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-5">กรุณากรอกข้อมูลผู้ยืมให้ครบถ้วน</p>
 
-      <div class="flex gap-2">
-        <div class="flex-1 relative">
-          <input type="text" id="userBarcode" placeholder="สแกน Barcode หรือพิมพ์รหัส..."
-            class="w-full border-2 border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-950/30
-                   rounded-xl px-4 py-3 pl-11 text-slate-800 dark:text-white
-                   focus:outline-none focus:border-indigo-500 transition-all text-base"
-            autofocus autocomplete="off">
-          <i class="fas fa-barcode absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400 text-lg"></i>
+      <form id="userForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">เบอร์โทรศัพท์มือถือ</label>
+          <input type="tel" id="userPhone" required placeholder="08xxxxxxxx"
+            class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-xl px-4 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 transition-all">
         </div>
-        <button onclick="openCameraScanner('user')" title="สแกนด้วยกล้อง"
-          class="px-4 rounded-xl bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-all border border-indigo-200 dark:border-indigo-700">
-          <i class="fas fa-camera text-xl"></i>
-        </button>
-      </div>
-      <p class="text-xs text-slate-400 mt-2"><i class="fas fa-info-circle mr-1"></i>เครื่องสแกน USB จะส่ง Enter โดยอัตโนมัติ</p>
-    </div>
-
-    <!-- User Info Card (hidden until scanned) -->
-    <div id="userInfoCard" class="hidden animate-bounce-in">
-      <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-xl">
-        <div class="flex items-center gap-4">
-          <div class="relative">
-            <img id="userAvatar" src="" alt="" class="w-20 h-20 rounded-2xl object-cover border-3 border-white/30 shadow-lg">
-            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 rounded-full border-2 border-white flex items-center justify-center">
-              <i class="fas fa-check text-white text-xs"></i>
-            </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">ชื่อ</label>
+            <input type="text" id="userFirstName" required placeholder="ชื่อจริง"
+              class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-xl px-4 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 transition-all">
           </div>
           <div>
-            <p class="text-white/70 text-sm font-medium" id="userRoleLabel"></p>
-            <p class="text-2xl font-extrabold" id="userName"></p>
-            <p class="text-white/80 text-sm" id="userClass"></p>
-            <p class="text-white/60 text-xs mt-1" id="userCode"></p>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">นามสกุล</label>
+            <input type="text" id="userLastName" required placeholder="นามสกุล"
+              class="w-full border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-xl px-4 py-2 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500 transition-all">
           </div>
         </div>
-        <div class="mt-4 flex justify-between items-center">
-          <span class="text-white/70 text-sm">ตรวจสอบสำเร็จ ✓</span>
-          <button onclick="resetStep1()" class="text-white/60 hover:text-white text-sm underline">
-            <i class="fas fa-redo mr-1"></i>สแกนใหม่
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">สถานะ</label>
+          <div class="flex gap-4">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="userRole" value="student" checked class="text-indigo-500 focus:ring-indigo-500">
+              <span class="text-slate-700 dark:text-slate-300">นักเรียน</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="userRole" value="teacher" class="text-indigo-500 focus:ring-indigo-500">
+              <span class="text-slate-700 dark:text-slate-300">ครู</span>
+            </label>
+          </div>
+        </div>
+        <div class="pt-2">
+          <button type="submit" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2.5 rounded-xl transition-all shadow-md">
+            ถัดไป <i class="fas fa-arrow-right ml-1"></i>
           </button>
         </div>
-      </div>
+      </form>
     </div>
+
   </div>
 
   <!-- Step 2: Scan iPad -->
@@ -86,7 +83,7 @@ require_once __DIR__ . '/../layout/kiosk_header.php';
       </h2>
       <div class="flex items-center justify-between mb-5">
         <p class="text-slate-500 dark:text-slate-400 text-sm">สแกน Barcode ที่ติดอยู่บน iPad</p>
-        <button onclick="resetAll()" class="text-xs text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg transition-colors"><i class="fas fa-arrow-left mr-1"></i>กลับไปสแกนบัตร</button>
+        <button onclick="resetAll()" class="text-xs text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg transition-colors"><i class="fas fa-arrow-left mr-1"></i>กลับไปแก้ไขข้อมูล</button>
       </div>
 
       <div class="flex gap-2">
@@ -195,15 +192,54 @@ let ipadData = null;
 let currentScanTarget = 'user';
 let html5QrCode = null;
 
-// Auto-focus user barcode
-document.getElementById('userBarcode').focus();
+// Focus phone on load
+document.getElementById('userPhone').focus();
 
-// User barcode scan
-document.getElementById('userBarcode').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && this.value.trim()) {
-    e.preventDefault();
-    scanUser(this.value.trim());
-  }
+// Handle User Form Submit
+document.getElementById('userForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const phone = document.getElementById('userPhone').value.trim();
+  const firstName = document.getElementById('userFirstName').value.trim();
+  const lastName = document.getElementById('userLastName').value.trim();
+  const role = document.querySelector('input[name="userRole"]:checked').value;
+
+  showLoader(true);
+  fetch('api/find_or_create_user.php', {
+    method: 'POST',
+    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+    body: `phone=${encodeURIComponent(phone)}&first_name=${encodeURIComponent(firstName)}&last_name=${encodeURIComponent(lastName)}&role=${encodeURIComponent(role)}`
+  })
+  .then(r => r.json())
+  .then(data => {
+    showLoader(false);
+    if (data.success) {
+      userData = data.user;
+      
+      // We don't display user info card in step 1 anymore since it's a form.
+      // We just transition to step 2 immediately.
+      
+      document.getElementById('borrowUserId').value = userData.id;
+
+      // Update Step Indicators
+      document.getElementById('step1').classList.add('hidden');
+      document.getElementById('step2').classList.remove('hidden');
+      document.getElementById('step-circle-1').classList.replace('bg-indigo-500', 'bg-emerald-500');
+      document.getElementById('step-circle-1').classList.replace('border-indigo-500', 'border-emerald-500');
+      document.getElementById('step-circle-1').innerHTML = '<i class="fas fa-check"></i>';
+      document.getElementById('step-line-1').classList.replace('bg-slate-200', 'bg-emerald-500');
+      document.getElementById('step-circle-2').classList.replace('bg-transparent', 'bg-indigo-500');
+      document.getElementById('step-circle-2').classList.replace('border-slate-300', 'border-indigo-500');
+      document.getElementById('step-circle-2').classList.replace('text-slate-400', 'text-white');
+      
+      setTimeout(() => document.getElementById('ipadBarcode').focus(), 100);
+    } else {
+      Swal.fire({icon: 'error', title: 'ข้อผิดพลาด', text: data.message});
+    }
+  })
+  .catch(err => {
+    showLoader(false);
+    Swal.fire({icon: 'error', title: 'ข้อผิดพลาด', text: 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'});
+  });
 });
 
 // iPad barcode scan
@@ -214,37 +250,7 @@ document.getElementById('ipadBarcode').addEventListener('keydown', function(e) {
   }
 });
 
-function scanUser(barcode) {
-  showLoader(true);
-  fetch('api/scan_user.php', {
-    method: 'POST',
-    headers: {'Content-Type':'application/x-www-form-urlencoded'},
-    body: 'barcode=' + encodeURIComponent(barcode)
-  })
-  .then(r => r.json())
-  .then(data => {
-    showLoader(false);
-    if (data.success) {
-      userData = data.user;
-      document.getElementById('userAvatar').src = data.user.avatar_url;
-      document.getElementById('userAvatar').onerror = function() { this.src = '<?= DEFAULT_AVATAR ?>'; };
-      document.getElementById('userName').textContent = data.user.full_name;
-      document.getElementById('userClass').textContent = data.user.class_position;
-      document.getElementById('userCode').textContent = 'รหัส: ' + data.user.user_code;
-      document.getElementById('userRoleLabel').textContent = data.user.role_label;
-      document.getElementById('userInfoCard').classList.remove('hidden');
-      document.getElementById('borrowUserId').value = data.user.id;
-      // Move to step 2
-      setTimeout(() => goToStep2(), 600);
-    } else {
-      Swal.fire({ icon:'error', title:'ไม่พบผู้ใช้', text: data.message,
-        confirmButtonColor:'#6366f1', background: isDark() ? '#1e293b' : '#fff', color: isDark() ? '#f1f5f9' : '#1e293b' });
-      document.getElementById('userBarcode').value = '';
-      document.getElementById('userBarcode').focus();
-    }
-  })
-  .catch(() => { showLoader(false); Swal.fire({icon:'error',title:'เกิดข้อผิดพลาด',text:'ไม่สามารถเชื่อมต่อได้',confirmButtonColor:'#6366f1'}); });
-}
+
 
 function goToStep2() {
   setStepActive(2);
@@ -295,7 +301,7 @@ function goToStep3() {
   setStepActive(3);
   document.getElementById('step2').classList.add('hidden');
   document.getElementById('step3').classList.remove('hidden');
-  document.getElementById('confirmUser').textContent = userData.full_name + ' (' + userData.class_position + ')';
+  document.getElementById('confirmUser').textContent = userData.full_name + ' (' + userData.role_label + ')';
   document.getElementById('confirmIpad').textContent = ipadData.device_name + ' - ' + ipadData.model;
   // Default due date: today 16:00
   const now = new Date();
