@@ -14,7 +14,6 @@ $actionIcons = [
     'create_ipad'  => ['icon'=>'fa-tablet-alt',    'color'=>'text-purple-500'],
     'update_ipad'  => ['icon'=>'fa-pencil-alt',    'color'=>'text-amber-500'],
     'delete_ipad'  => ['icon'=>'fa-trash-alt',     'color'=>'text-red-500'],
-    'install'      => ['icon'=>'fa-cog',           'color'=>'text-slate-500'],
 ];
 ?>
 

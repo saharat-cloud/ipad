@@ -83,11 +83,11 @@ class BorrowRecord {
             array_push($params, $s, $s, $s, $s, $s);
         }
         if (!empty($filters['date_from'])) {
-            $sql .= " AND DATE(br.borrowed_at) >= ?";
+            $sql .= " AND CAST(br.borrowed_at AS DATE) >= ?";
             $params[] = $filters['date_from'];
         }
         if (!empty($filters['date_to'])) {
-            $sql .= " AND DATE(br.borrowed_at) <= ?";
+            $sql .= " AND CAST(br.borrowed_at AS DATE) <= ?";
             $params[] = $filters['date_to'];
         }
         if (!empty($filters['class'])) {
@@ -111,10 +111,10 @@ class BorrowRecord {
 
     public function getDailyStats(int $days = 30): array {
         $stmt = $this->pdo->prepare("
-            SELECT DATE(borrowed_at) as date, COUNT(*) as count
+            SELECT CAST(borrowed_at AS DATE) as date, COUNT(*) as count
             FROM borrow_records
-            WHERE borrowed_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
-            GROUP BY DATE(borrowed_at)
+            WHERE borrowed_at >= CURRENT_DATE - CAST(? || ' days' AS INTERVAL)
+            GROUP BY CAST(borrowed_at AS DATE)
             ORDER BY date ASC
         ");
         $stmt->execute([$days]);
@@ -123,10 +123,10 @@ class BorrowRecord {
 
     public function getMonthlyStats(int $months = 6): array {
         $stmt = $this->pdo->prepare("
-            SELECT DATE_FORMAT(borrowed_at,'%Y-%m') as month, DATE_FORMAT(borrowed_at,'%b %Y') as label, COUNT(*) as count
+            SELECT TO_CHAR(borrowed_at, 'YYYY-MM') as month, COUNT(*) as count
             FROM borrow_records
-            WHERE borrowed_at >= DATE_SUB(NOW(), INTERVAL ? MONTH)
-            GROUP BY DATE_FORMAT(borrowed_at,'%Y-%m')
+            WHERE borrowed_at >= CURRENT_DATE - CAST(? || ' months' AS INTERVAL)
+            GROUP BY TO_CHAR(borrowed_at, 'YYYY-MM')
             ORDER BY month ASC
         ");
         $stmt->execute([$months]);
@@ -138,7 +138,8 @@ class BorrowRecord {
             SELECT u.class_position, COUNT(*) as count
             FROM borrow_records br
             JOIN users u ON br.user_id = u.id
-            WHERE MONTH(br.borrowed_at) = MONTH(NOW()) AND YEAR(br.borrowed_at) = YEAR(NOW())
+            WHERE EXTRACT(MONTH FROM br.borrowed_at) = EXTRACT(MONTH FROM CURRENT_DATE) 
+              AND EXTRACT(YEAR FROM br.borrowed_at) = EXTRACT(YEAR FROM CURRENT_DATE)
               AND u.class_position != ''
             GROUP BY u.class_position
             ORDER BY count DESC
@@ -169,7 +170,7 @@ class BorrowRecord {
 
     public function getTodayCount(): int {
         return (int)$this->pdo->query(
-            "SELECT COUNT(*) FROM borrow_records WHERE DATE(borrowed_at) = CURDATE()"
+            "SELECT COUNT(*) FROM borrow_records WHERE CAST(borrowed_at AS DATE) = CURRENT_DATE"
         )->fetchColumn();
     }
 }

@@ -108,15 +108,6 @@
         </button>
       </div>
     </form>
-
-    <!-- Install link -->
-    <?php if (!isset($pdo) || !$pdo): ?>
-    <div class="mt-5 text-center">
-      <a href="?page=install" class="text-indigo-400 hover:text-indigo-300 text-sm underline">
-        <i class="fas fa-cog mr-1"></i>ติดตั้งระบบ
-      </a>
-    </div>
-    <?php endif; ?>
   </div>
 
   <p class="text-center text-white/20 text-xs mt-6">

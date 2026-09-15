@@ -11,7 +11,7 @@ if (isset($pdo)) {
 }
 
 $page = $_GET['page'] ?? 'borrow';
-$public_pages = ['login', 'install', 'borrow', 'return'];
+$public_pages = ['login', 'borrow', 'return'];
 
 // Auth guard
 if (!isLoggedIn() && !in_array($page, $public_pages)) {
@@ -29,9 +29,7 @@ require_once __DIR__ . '/models/ActivityLog.php';
 
 // Router
 switch ($page) {
-    case 'install':
-        require_once __DIR__ . '/install.php';
-        break;
+
 
     case 'login':
     case 'logout':
