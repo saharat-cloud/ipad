@@ -152,7 +152,8 @@ function renderStep2() {
   document.getElementById('step1').classList.add('hidden');
   document.getElementById('step2').classList.remove('hidden');
 
-  document.getElementById('userInfoAvatar').src = currentUser.avatar;
+  const avatarImg = document.getElementById('userInfoAvatar');
+  if (avatarImg) avatarImg.src = currentUser.avatar;
   document.getElementById('userInfoName').textContent = currentUser.full_name;
   document.getElementById('userInfoRole').textContent = currentUser.role_label;
 
