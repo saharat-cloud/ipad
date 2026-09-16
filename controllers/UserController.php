@@ -91,8 +91,7 @@ class UserController {
     }
 
     public function delete(): void {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') redirect('?page=users');
-        $id = (int)($_POST['id'] ?? 0);
+        $id = (int)($_GET['id'] ?? 0);
         
         try {
             $user = $this->model->findById($id);

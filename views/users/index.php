@@ -101,10 +101,7 @@ require_once __DIR__ . '/../layout/sidebar.php';
   </div>
 </div>
 
-<form id="deleteForm" method="POST" action="index.php" class="hidden">
-  <input type="hidden" name="page" value="user_delete">
-  <input type="hidden" name="id" id="deleteId">
-</form>
+
 
 <script>
 function confirmDelete(id, name) {
@@ -119,8 +116,7 @@ function confirmDelete(id, name) {
         cancelButtonText: 'ยกเลิก'
     }).then((result) => {
         if (result.isConfirmed) {
-            document.getElementById('deleteId').value = id;
-            document.getElementById('deleteForm').submit();
+            window.location.href = '?page=user_delete&id=' + id;
         }
     });
 }
