@@ -249,11 +249,13 @@ function renderStep3(returnIds, returnNotes, unreturnedBorrows) {
             <input type="radio" name="unreturnedAction_${br.id}" value="reason" onchange="toggleActionDetail(${br.id})" class="text-orange-500 focus:ring-orange-500"> ระบุเหตุผลอื่น
           </label>
         </div>
-        <div id="extendContainer_${br.id}" class="block">
+        <div id="extendContainer_${br.id}" class="block mt-2">
+          <label class="block text-xs font-semibold text-orange-600 dark:text-orange-400 mb-1">วันที่กำหนดคืน:</label>
           <input type="datetime-local" id="extendDate_${br.id}" value="${defaultDueDate}" min="${minDate}"
             class="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-orange-400">
         </div>
-        <div id="reasonContainer_${br.id}" class="hidden">
+        <div id="reasonContainer_${br.id}" class="hidden mt-2">
+          <label class="block text-xs font-semibold text-orange-600 dark:text-orange-400 mb-1">เหตุผล:</label>
           <input type="text" id="reasonText_${br.id}" placeholder="โปรดระบุเหตุผล (เช่น ทำหาย, ลืมไว้ที่บ้าน)"
             class="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-orange-400">
         </div>
