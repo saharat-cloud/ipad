@@ -29,7 +29,7 @@ require_once __DIR__ . '/../layout/sidebar.php';
         <i class="fas fa-search mr-1"></i> ค้นหา
       </button>
     </form>
-    <a href="?page=users&action=create" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-purple-500/30 whitespace-nowrap">
+    <a href="?page=user_create" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-purple-500/30 whitespace-nowrap">
       <i class="fas fa-plus mr-1"></i> เพิ่มเจ้าหน้าที่
     </a>
   </div>
@@ -79,7 +79,7 @@ require_once __DIR__ . '/../layout/sidebar.php';
           </td>
           <td class="p-4 text-right">
             <div class="flex items-center justify-end gap-2">
-              <a href="?page=users&action=edit&id=<?= $u['id'] ?>" class="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors border border-slate-200 dark:border-slate-700">
+              <a href="?page=user_edit&id=<?= $u['id'] ?>" class="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors border border-slate-200 dark:border-slate-700">
                 <i class="fas fa-edit"></i>
               </a>
               <?php if ($u['id'] !== 1): ?>
@@ -101,7 +101,7 @@ require_once __DIR__ . '/../layout/sidebar.php';
   </div>
 </div>
 
-<form id="deleteForm" method="POST" action="?page=users&action=delete" class="hidden">
+<form id="deleteForm" method="POST" action="?page=user_delete" class="hidden">
   <input type="hidden" name="id" id="deleteId">
 </form>
 
