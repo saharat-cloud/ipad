@@ -65,7 +65,7 @@ $kioskNav = [
           <i class="fas fa-moon hidden dark:inline"></i>
         </button>
         <a href="?page=dashboard" class="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-          <i class="fas fa-chart-pie"></i> <span class="hidden sm:inline">ระบบหลังบ้าน</span>
+          <i class="fas fa-sign-in-alt"></i> <span class="hidden sm:inline">เข้าสู่ระบบ สำหรับเจ้าหน้าที่</span>
         </a>
       </div>
 

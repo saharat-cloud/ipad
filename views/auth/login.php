@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th" class="dark">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,12 +16,13 @@
   <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/custom.css">
   <style>
     .login-bg {
-      background: radial-gradient(ellipse at top left, #312e81 0%, #0f172a 40%, #1e1b4b 100%);
+      background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
     }
     .glass-card {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.7);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.9);
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
     }
     .floating-shapes div {
       position: absolute;
@@ -47,12 +48,12 @@
 <div class="w-full max-w-md relative z-10">
   <!-- Logo -->
   <div class="text-center mb-8">
-    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-400 to-purple-600 rounded-2xl shadow-2xl mb-4
+    <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-xl shadow-indigo-500/20 mb-4
                 hover:scale-105 transition-transform duration-300">
       <i class="fas fa-tablet-alt text-white text-4xl"></i>
     </div>
-    <h1 class="text-3xl font-extrabold text-white mb-1">iPad Borrow System</h1>
-    <p class="text-indigo-300 text-sm">ระบบบริหารจัดการยืม-คืน iPad</p>
+    <h1 class="text-3xl font-extrabold text-slate-800 mb-1">iPad Borrow System</h1>
+    <p class="text-indigo-600 font-medium text-sm">ระบบบริหารจัดการยืม-คืน iPad</p>
   </div>
 
   <!-- Login Card -->
@@ -67,33 +68,33 @@
     <form method="POST" id="loginForm">
       <div class="space-y-5">
         <div>
-          <label class="text-indigo-200 text-sm font-semibold block mb-2">
-            <i class="fas fa-user mr-1"></i>ชื่อผู้ใช้
+          <label class="text-slate-700 text-sm font-semibold block mb-2">
+            <i class="fas fa-user mr-1 text-indigo-500"></i>ชื่อผู้ใช้
           </label>
           <div class="relative">
             <input type="text" name="username" id="username" autocomplete="username"
               value="<?= sanitize($_POST['username'] ?? '') ?>"
               placeholder="กรอกชื่อผู้ใช้"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-11 text-white placeholder-white/30
-                     focus:outline-none focus:border-indigo-400 focus:bg-white/10 transition-all"
+              class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 pl-11 text-slate-800 placeholder-slate-400
+                     focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all shadow-sm"
               required>
-            <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400"></i>
+            <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
           </div>
         </div>
 
         <div>
-          <label class="text-indigo-200 text-sm font-semibold block mb-2">
-            <i class="fas fa-lock mr-1"></i>รหัสผ่าน
+          <label class="text-slate-700 text-sm font-semibold block mb-2">
+            <i class="fas fa-lock mr-1 text-indigo-500"></i>รหัสผ่าน
           </label>
           <div class="relative">
             <input type="password" name="password" id="password" autocomplete="current-password"
               placeholder="กรอกรหัสผ่าน"
-              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-11 pr-12 text-white placeholder-white/30
-                     focus:outline-none focus:border-indigo-400 focus:bg-white/10 transition-all"
+              class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 pl-11 pr-12 text-slate-800 placeholder-slate-400
+                     focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all shadow-sm"
               required>
-            <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400"></i>
+            <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
             <button type="button" onclick="togglePassword()"
-              class="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors">
+              class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors">
               <i id="eyeIcon" class="fas fa-eye"></i>
             </button>
           </div>
@@ -110,7 +111,7 @@
     </form>
   </div>
 
-  <p class="text-center text-white/20 text-xs mt-6">
+  <p class="text-center text-slate-500 text-xs mt-6 font-medium">
     &copy; <?= date('Y') ?> iPad Borrow System — School Edition
   </p>
 </div>
