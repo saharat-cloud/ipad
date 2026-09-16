@@ -512,7 +512,7 @@ function clearHistory() {
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
-      fetch('api/clear_history.php', { method: 'POST' })
+      fetch('?page=clear_history_api', { method: 'POST' })
       .then(res => res.json())
       .then(data => {
         if (data.success) {

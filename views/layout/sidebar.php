@@ -66,9 +66,6 @@ $navItems = [
         </span>
       </div>
     </div>
-    <a href="?page=borrow" class="flex items-center gap-3 w-full px-4 py-3 mb-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-orange-500/30 transition-all">
-      <i class="fas fa-desktop"></i> โหมดหน้าเคาน์เตอร์
-    </a>
     <a href="?page=logout" class="flex items-center gap-2 w-full px-4 py-2.5 rounded-xl text-sm text-slate-300 hover:bg-red-500/20 hover:text-red-400 transition-all">
       <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
     </a>
@@ -96,6 +93,11 @@ $navItems = [
       <i class="fas fa-clock text-indigo-400"></i>
       <span id="liveClock"></span>
     </div>
+
+    <!-- Kiosk Mode -->
+    <a href="?page=borrow" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-md shadow-orange-500/20 transition-all">
+      <i class="fas fa-desktop"></i> โหมดหน้าเคาน์เตอร์
+    </a>
 
     <!-- Dark Mode Toggle -->
     <button id="darkModeToggle" onclick="toggleDarkMode()"
