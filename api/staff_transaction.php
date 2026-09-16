@@ -3,7 +3,8 @@ session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/helpers.php';
 
-if (!isLoggedIn() || !in_array($_SESSION['system_user_role'], ['admin', 'staff'])) {
+$systemUser = $_SESSION['system_user'] ?? null;
+if (!isLoggedIn() || !$systemUser || !in_array($systemUser['role'], ['admin', 'staff'])) {
     jsonResponse(['success' => false, 'message' => 'Unauthorized']);
 }
 
