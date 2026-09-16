@@ -30,6 +30,7 @@ require_once __DIR__ . '/../layout/sidebar.php';
 
   <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
     <form method="POST" action="?page=user_<?= $action ?><?= $action === 'edit' ? '&id='.$user['id'] : '' ?>">
+      <input type="hidden" name="page" value="user_<?= $action ?>">
       <div class="p-6 space-y-6">
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

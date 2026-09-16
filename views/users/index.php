@@ -102,6 +102,7 @@ require_once __DIR__ . '/../layout/sidebar.php';
 </div>
 
 <form id="deleteForm" method="POST" action="?page=user_delete" class="hidden">
+  <input type="hidden" name="page" value="user_delete">
   <input type="hidden" name="id" id="deleteId">
 </form>
 

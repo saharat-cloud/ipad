@@ -10,7 +10,7 @@ if (isset($pdo)) {
     } catch (Exception $e) {}
 }
 
-$page = $_GET['page'] ?? 'borrow';
+$page = $_GET['page'] ?? $_POST['page'] ?? 'borrow';
 $public_pages = ['login', 'borrow', 'return'];
 
 // Auth guard
