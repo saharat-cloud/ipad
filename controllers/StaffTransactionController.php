@@ -17,7 +17,7 @@ class StaffTransactionController {
         $ipadModel = new Ipad($this->pdo);
         $userModel = new User($this->pdo);
 
-        $availableIpads = $ipadModel->getAll(['status' => 'available']);
+        $availableIpads = $ipadModel->getAll('', 'available');
         
         require_once __DIR__ . '/../views/staff_transaction/index.php';
     }
