@@ -290,7 +290,7 @@ function approveReturns(recordIds) {
         allowOutsideClick: false,
         didOpen: () => { Swal.showLoading(); }
     });
-    fetch('api/approve_return.php', {
+    fetch('?page=api_approve_return', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ record_ids: recordIds })

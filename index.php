@@ -112,6 +112,12 @@ switch ($page) {
         require_once __DIR__ . '/controllers/ReportController.php';
         (new ReportController($pdo))->history();
         break;
+        
+    case 'api_approve_return':
+        requireLogin();
+        require_once __DIR__ . '/controllers/ReportController.php';
+        (new ReportController($pdo))->approveReturn();
+        break;
 
     case 'reports':
         requireLogin();
