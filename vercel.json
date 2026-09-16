@@ -29,5 +29,8 @@
     ],
     "env": {
         "VERCEL": "1"
-    }
+    },
+    "regions": [
+        "sin1"
+    ]
 }
