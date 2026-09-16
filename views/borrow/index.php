@@ -1,6 +1,8 @@
 <?php
 $pageTitle = 'ยืม iPad';
 require_once __DIR__ . '/../layout/kiosk_header.php';
+$ipadModel = new Ipad($pdo);
+$availableIpads = $ipadModel->getAll('', 'available');
 ?>
 
 <div class="max-w-2xl mx-auto">
@@ -79,48 +81,40 @@ require_once __DIR__ . '/../layout/kiosk_header.php';
     <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm mb-4">
       <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
         <span class="w-7 h-7 bg-indigo-500 text-white rounded-full text-sm flex items-center justify-center font-bold">2</span>
-        สแกน iPad
+        เลือก iPad
       </h2>
       <div class="flex items-center justify-between mb-5">
-        <p class="text-slate-500 dark:text-slate-400 text-sm">สแกน Barcode ที่ติดอยู่บน iPad</p>
+        <p class="text-slate-500 dark:text-slate-400 text-sm">เลือกเครื่องที่ต้องการยืมจากรายการด้านล่าง</p>
         <button onclick="resetAll()" class="text-xs text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 font-semibold bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg transition-colors"><i class="fas fa-arrow-left mr-1"></i>กลับไปแก้ไขข้อมูล</button>
       </div>
 
-      <div class="flex gap-2">
-        <div class="flex-1 relative">
-          <input type="text" id="ipadBarcode" placeholder="สแกน Barcode iPad..."
-            class="w-full border-2 border-purple-200 dark:border-purple-700 bg-purple-50 dark:bg-purple-950/30
-                   rounded-xl px-4 py-3 pl-11 text-slate-800 dark:text-white
-                   focus:outline-none focus:border-purple-500 transition-all text-base"
-            autocomplete="off">
-          <i class="fas fa-tablet-alt absolute left-4 top-1/2 -translate-y-1/2 text-purple-400 text-lg"></i>
+      <form id="ipadForm" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-2">
+          <?php if (empty($availableIpads)): ?>
+            <div class="col-span-full p-4 text-center text-slate-500 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+              ไม่มี iPad ว่างให้ยืมในขณะนี้
+            </div>
+          <?php else: ?>
+            <?php foreach ($availableIpads as $ipad): ?>
+              <label class="relative flex items-center gap-3 p-4 border-2 border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 transition-all [&:has(input:checked)]:border-indigo-500 [&:has(input:checked)]:bg-indigo-50 dark:[&:has(input:checked)]:bg-indigo-900/20">
+                <input type="radio" name="selectedIpad" value="<?= htmlspecialchars(json_encode($ipad)) ?>" required class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                <div class="flex-1">
+                  <div class="font-bold text-slate-800 dark:text-white"><?= htmlspecialchars($ipad['device_name']) ?></div>
+                  <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">S/N: <?= htmlspecialchars($ipad['serial_number']) ?></div>
+                </div>
+              </label>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </div>
-        <button onclick="openCameraScanner('ipad')" title="สแกนด้วยกล้อง"
-          class="px-4 rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/50 transition-all border border-purple-200 dark:border-purple-700">
-          <i class="fas fa-camera text-xl"></i>
-        </button>
-      </div>
+        <div class="pt-2">
+          <button type="submit" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2.5 rounded-xl transition-all shadow-md" <?= empty($availableIpads) ? 'disabled' : '' ?>>
+            ถัดไป <i class="fas fa-arrow-right ml-1"></i>
+          </button>
+        </div>
+      </form>
     </div>
 
-    <!-- iPad Info Card -->
-    <div id="ipadInfoCard" class="hidden animate-bounce-in">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border-2 border-purple-200 dark:border-purple-700 shadow-sm">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-            <i class="fas fa-tablet-alt text-white text-2xl"></i>
-          </div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="px-2.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-full">✓ พร้อมใช้งาน</span>
-            </div>
-            <p class="font-bold text-slate-800 dark:text-white text-lg" id="ipadName"></p>
-            <p class="text-slate-500 dark:text-slate-400 text-sm" id="ipadModel"></p>
-            <p class="text-slate-400 text-xs mt-0.5">S/N: <span id="ipadSerial"></span></p>
-          </div>
-          <input type="hidden" id="ipadId">
-        </div>
-      </div>
-    </div>
+    <!-- iPad Info Card was here, but removed since we select directly -->
   </div>
 
   <!-- Step 3: Confirm -->
@@ -219,72 +213,36 @@ document.getElementById('userForm').addEventListener('submit', function(e) {
       // We just transition to step 2 immediately.
       
       document.getElementById('borrowUserId').value = userData.id;
-
-      // Instead of manual DOM manipulation, let's use the robust goToStep2 function
       goToStep2();
     } else {
-      Swal.fire({icon: 'error', title: 'ข้อผิดพลาด', text: data.message});
+      Swal.fire({icon: 'error', title: 'เกิดข้อผิดพลาด', text: data.message, confirmButtonColor: '#6366f1'});
     }
   })
-  .catch(err => {
+  .catch(() => {
     showLoader(false);
-    Swal.fire({icon: 'error', title: 'ข้อผิดพลาด', text: 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'});
+    Swal.fire({icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถเชื่อมต่อได้', confirmButtonColor: '#6366f1'});
   });
 });
 
-// iPad barcode scan
-document.getElementById('ipadBarcode').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && this.value.trim()) {
-    e.preventDefault();
-    scanIpad(this.value.trim());
+// Handle iPad Selection Submit
+document.getElementById('ipadForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const selectedRadio = document.querySelector('input[name="selectedIpad"]:checked');
+  if (!selectedRadio) {
+    Swal.fire({icon: 'warning', title: 'กรุณาเลือก iPad', confirmButtonColor: '#6366f1'});
+    return;
   }
+  
+  const selectedIpad = JSON.parse(selectedRadio.value);
+  ipadData = selectedIpad;
+  
+  goToStep3();
 });
-
-
 
 function goToStep2() {
   setStepActive(2);
   document.getElementById('step1').classList.add('hidden');
   document.getElementById('step2').classList.remove('hidden');
-  setTimeout(() => document.getElementById('ipadBarcode').focus(), 100);
-}
-
-function scanIpad(barcode) {
-  showLoader(true);
-  fetch('api/scan_ipad.php', {
-    method: 'POST',
-    headers: {'Content-Type':'application/x-www-form-urlencoded'},
-    body: 'barcode=' + encodeURIComponent(barcode)
-  })
-  .then(r => r.json())
-  .then(data => {
-    showLoader(false);
-    if (data.success) {
-      ipadData = data.ipad;
-      document.getElementById('ipadName').textContent = data.ipad.device_name;
-      document.getElementById('ipadModel').textContent = data.ipad.model;
-      document.getElementById('ipadSerial').textContent = data.ipad.serial_number;
-      document.getElementById('ipadId').value = data.ipad.id;
-      document.getElementById('ipadInfoCard').classList.remove('hidden');
-      setTimeout(() => goToStep3(), 600);
-    } else if (data.blocked) {
-      let msg = data.message;
-      if (data.borrower) {
-        msg += `\n\nผู้ยืม: ${data.borrower.name}\nยืมเมื่อ: ${data.borrower.borrowed_at}`;
-        if (data.borrower.is_overdue) msg += '\n⚠️ เกินกำหนดคืนแล้ว!';
-      }
-      Swal.fire({ icon:'warning', title:'ไม่สามารถยืมได้', text: msg.trim(),
-        confirmButtonColor:'#6366f1', background: isDark() ? '#1e293b' : '#fff', color: isDark() ? '#f1f5f9' : '#1e293b' });
-      document.getElementById('ipadBarcode').value = '';
-      document.getElementById('ipadBarcode').focus();
-    } else {
-      Swal.fire({ icon:'error', title:'ไม่พบ iPad', text: data.message,
-        confirmButtonColor:'#6366f1', background: isDark() ? '#1e293b' : '#fff', color: isDark() ? '#f1f5f9' : '#1e293b' });
-      document.getElementById('ipadBarcode').value = '';
-      document.getElementById('ipadBarcode').focus();
-    }
-  })
-  .catch(() => { showLoader(false); Swal.fire({icon:'error',title:'เกิดข้อผิดพลาด',text:'ไม่สามารถเชื่อมต่อได้',confirmButtonColor:'#6366f1'}); });
 }
 
 function goToStep3() {
@@ -362,8 +320,8 @@ function resetAll() {
   document.getElementById('userPhone').value = '';
   document.getElementById('userFirstName').value = '';
   document.getElementById('userLastName').value = '';
-  document.getElementById('ipadBarcode').value = '';
-  document.getElementById('ipadInfoCard').classList.add('hidden');
+  const selectedRadio = document.querySelector('input[name="selectedIpad"]:checked');
+  if (selectedRadio) selectedRadio.checked = false;
   document.getElementById('step2').classList.add('hidden');
   document.getElementById('step3').classList.add('hidden');
   document.getElementById('step1').classList.remove('hidden');
@@ -378,7 +336,6 @@ function goBackToStep2() {
   document.getElementById('step3').classList.add('hidden');
   document.getElementById('step2').classList.remove('hidden');
   setStepActive(2);
-  document.getElementById('ipadBarcode').focus();
 }
 
 function setStepActive(n) {
