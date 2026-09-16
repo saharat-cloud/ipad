@@ -207,7 +207,7 @@ function prepareExportRows($records) {
                     $deviceCodes,
                     formatDateShortTH($g['borrowed_at']),
                     '-', 
-                    "ยืมต่อ\n" . formatDateShortTH($newDueDate),
+                    "ยืมต่อ\nถึงวันที่ " . formatDateShortTH($newDueDate),
                     $noteStr
                 ];
             }
