@@ -35,6 +35,10 @@ try {
         $pdo->exec("TRUNCATE TABLE activity_logs");
     }
 
+    // 3. Clear borrower users (students, teachers) who are not admin/staff
+    $stmt = $pdo->prepare("DELETE FROM users WHERE role NOT IN ('admin', 'staff')");
+    $stmt->execute();
+
     $pdo->commit();
     jsonResponse(['success' => true, 'message' => 'ล้างข้อมูลประวัติและรีเซ็ตสถานะ iPad ทั้งหมดสำเร็จ']);
 } catch (Exception $e) {
