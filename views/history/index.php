@@ -253,6 +253,15 @@ function showDetails(dataStr) {
       return x.toLocaleString('th-TH');
     };
     
+    let pendingIds = [];
+    let returnedCount = 0;
+    let activeCount = 0;
+    
+    r.ipads.forEach(ip => {
+        if (ip.status === 'returned' || ip.status === 'pending_return') returnedCount++;
+        else if (ip.status === 'active' || ip.status === 'overdue') activeCount++;
+    });
+
     let html = `
       <div class="text-left space-y-3 mt-4 text-sm">
         <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
@@ -263,12 +272,27 @@ function showDetails(dataStr) {
           <span class="text-slate-500">กำหนดคืน:</span>
           <span class="font-medium text-slate-800 dark:text-white">${dt(r.due_date)}</span>
         </div>
+        
+        <div class="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 flex justify-between items-center text-xs">
+          <div class="text-center">
+            <span class="block text-slate-500 mb-1">ยืมทั้งหมด</span>
+            <span class="font-bold text-indigo-600 dark:text-indigo-400 text-sm">${r.ipads.length}</span>
+          </div>
+          <div class="text-center">
+            <span class="block text-slate-500 mb-1">คืน/รอตรวจสอบ</span>
+            <span class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">${returnedCount}</span>
+          </div>
+          <div class="text-center">
+            <span class="block text-slate-500 mb-1">ยังไม่คืน</span>
+            <span class="font-bold text-orange-600 dark:text-orange-400 text-sm">${activeCount}</span>
+          </div>
+        </div>
+
         <div class="mt-4">
           <span class="text-slate-500 block mb-2 font-bold">รายการเครื่องที่ยืม:</span>
           <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
     `;
 
-    let pendingIds = [];
     r.ipads.forEach(ip => {
         let statusClass = 'bg-slate-100 text-slate-700';
         let statusText = 'ไม่ระบุ';
