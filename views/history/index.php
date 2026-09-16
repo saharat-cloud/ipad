@@ -174,10 +174,23 @@ $groupedRecords = array_values($groupedRecordsMap);
             <span class="block text-xs text-red-500">⚠️ เกิน <?= timeDiffHuman($r['due_date']) ?></span>
             <?php endif; ?>
           </td>
-          <td class="px-4 py-3">
-            <button onclick="showDetails(this.dataset.info)" data-info="<?= htmlspecialchars(json_encode($r)) ?>" class="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+          <td class="px-4 py-3 text-right whitespace-nowrap">
+            <button onclick='showDetails(<?= json_encode($r) ?>)' class="px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg text-xs font-medium transition-colors border border-indigo-100 dark:border-indigo-800">
               <i class="fas fa-file-alt mr-1"></i> รายละเอียด
             </button>
+            <?php 
+            $activeIds = [];
+            foreach ($r['ipads'] as $ip) {
+                if (in_array($ip['status'], ['active', 'overdue'])) {
+                    $activeIds[] = $ip['id'];
+                }
+            }
+            if (!empty($activeIds) && isset($_GET['status']) && $_GET['status'] === 'overdue'): 
+            ?>
+            <button onclick='staffReturnGroup(<?= json_encode($activeIds) ?>)' class="ml-1 px-3 py-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-medium transition-colors border border-emerald-100 dark:border-emerald-800">
+              <i class="fas fa-check-circle mr-1"></i> ติดตามคืนแล้ว
+            </button>
+            <?php endif; ?>
           </td>
         </tr>
         <?php endforeach; ?>
@@ -390,6 +403,45 @@ function approveReturns(recordIds) {
     })
     .catch(e => {
         Swal.fire('ข้อผิดพลาด', e.message, 'error');
+    });
+}
+
+function staffReturnGroup(recordIds) {
+    Swal.fire({
+        title: 'ยืนยันการรับคืน',
+        text: 'คุณต้องการบันทึกว่าได้รับ iPad เหล่านี้คืนมาแล้วใช่หรือไม่?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: 'ใช่, ได้รับคืนแล้ว',
+        cancelButtonText: 'ยกเลิก'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            fetch('api/staff_transaction.php?action=return', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ records: recordIds })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.success) {
+                    Swal.fire({ icon: 'success', title: 'บันทึกการรับคืนสำเร็จ', showConfirmButton: false, timer: 1500 })
+                    .then(() => location.reload());
+                } else {
+                    Swal.fire('ข้อผิดพลาด', res.message || 'เกิดข้อผิดพลาด', 'error');
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+            });
+        }
     });
 }
 </script>
