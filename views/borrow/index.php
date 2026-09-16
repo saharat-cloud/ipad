@@ -101,8 +101,8 @@ $availableIpads = $ipadModel->getAll('', 'available');
                   <input type="checkbox" name="selectedIpads[]" value="<?= htmlspecialchars(json_encode($ipad)) ?>" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
                 </div>
                 <div class="flex-1 min-w-0">
-                  <div class="font-bold text-sm text-slate-800 dark:text-white truncate" title="<?= htmlspecialchars($ipad['device_name']) ?>"><?= htmlspecialchars($ipad['device_name']) ?></div>
-                  <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">S/N: <?= htmlspecialchars($ipad['serial_number']) ?></div>
+                  <div class="font-bold text-sm text-slate-800 dark:text-white truncate" title="<?= htmlspecialchars($ipad['device_code']) ?>"><?= htmlspecialchars($ipad['device_code']) ?></div>
+                  <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate"><?= htmlspecialchars($ipad['device_name']) ?></div>
                 </div>
               </label>
             <?php endforeach; ?>
@@ -260,8 +260,8 @@ function goToStep3() {
     const li = document.createElement('li');
     li.className = 'flex justify-between items-center bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700';
     li.innerHTML = `
-      <span class="font-semibold text-sm text-slate-800 dark:text-white">${ipad.device_name}</span>
-      <span class="text-xs text-slate-500 dark:text-slate-400">${ipad.serial_number}</span>
+      <span class="font-semibold text-sm text-slate-800 dark:text-white">${ipad.device_code}</span>
+      <span class="text-xs text-slate-500 dark:text-slate-400">${ipad.device_name}</span>
     `;
     listEl.appendChild(li);
   });
