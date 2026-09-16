@@ -83,7 +83,7 @@ require_once __DIR__ . '/../layout/sidebar.php';
                 <i class="fas fa-edit"></i>
               </a>
               <?php if ($u['id'] !== 1): ?>
-              <button type="button" onclick="confirmDelete(<?= $u['id'] ?>, '<?= sanitize($u['username']) ?>')" class="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors border border-slate-200 dark:border-slate-700">
+              <button type="button" onclick="confirmDelete('?page=user_delete&id=<?= $u['id'] ?>', '<?= sanitize($u['username']) ?>')" class="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 bg-white dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors border border-slate-200 dark:border-slate-700">
                 <i class="fas fa-trash-alt"></i>
               </button>
               <?php endif; ?>
@@ -103,23 +103,6 @@ require_once __DIR__ . '/../layout/sidebar.php';
 
 
 
-<script>
-function confirmDelete(id, name) {
-    Swal.fire({
-        title: 'ยืนยันการลบ?',
-        text: `คุณต้องการลบเจ้าหน้าที่ "${name}" ใช่หรือไม่?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#94a3b8',
-        confirmButtonText: 'ใช่, ลบเลย!',
-        cancelButtonText: 'ยกเลิก'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = '?page=user_delete&id=' + id;
-        }
-    });
-}
-</script>
+
 
 <?php require_once __DIR__ . '/../layout/footer.php'; ?>
