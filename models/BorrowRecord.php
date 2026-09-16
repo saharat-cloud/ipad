@@ -83,7 +83,12 @@ class BorrowRecord {
         $params = [];
 
         if (!empty($filters['status'])) {
-            $sql .= " AND br.status = ?";
+            $sql .= " AND EXISTS (
+                SELECT 1 FROM borrow_records br2 
+                WHERE br2.user_id = br.user_id 
+                  AND br2.borrowed_at = br.borrowed_at 
+                  AND br2.status = ?
+            )";
             $params[] = $filters['status'];
         }
         if (!empty($filters['search'])) {
