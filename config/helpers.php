@@ -180,3 +180,25 @@ function getAvatarUrl(?string $avatar): string {
     if (str_starts_with($avatar, 'http')) return $avatar;
     return UPLOAD_URL . $avatar;
 }
+
+function sendLineNotify(string $message): bool {
+    $token = getenv('LINE_NOTIFY_TOKEN');
+    if (!$token) return false;
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://notify-api.line.me/api/notify");
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, "message=" . urlencode($message));
+    $headers = [
+        'Content-type: application/x-www-form-urlencoded',
+        'Authorization: Bearer ' . $token,
+    ];
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    $result = curl_exec($ch);
+    curl_close($ch);
+    
+    return $result !== false;
+}
