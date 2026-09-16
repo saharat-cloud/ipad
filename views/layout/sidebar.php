@@ -103,21 +103,32 @@ $navItems = [
       <i class="fas fa-moon hidden dark:inline"></i>
     </button>
 
-    <!-- Notifications (overdue alert) -->
+    <!-- Notifications -->
     <?php
-    // $pdo may be local to controller method scope — grab global fallback
     if (!isset($pdo) || !$pdo instanceof PDO) {
         global $pdo;
     }
     $overdueCountNav = 0;
+    $pendingReturnCountNav = 0;
     if (isset($pdo) && $pdo instanceof PDO) {
         try {
             $overdueCountNav = (int)$pdo->query("SELECT COUNT(*) FROM borrow_records WHERE status='overdue'")->fetchColumn();
+            $pendingReturnCountNav = (int)$pdo->query("SELECT COUNT(*) FROM borrow_records WHERE status='pending_return'")->fetchColumn();
         } catch (Exception $e) {}
     }
     ?>
+    
+    <!-- Pending Return Notification -->
+    <?php if ($pendingReturnCountNav > 0): ?>
+    <a href="?page=history&status=pending_return" title="รออนุมัติคืน" class="relative p-2 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-all">
+      <i class="fas fa-clipboard-check"></i>
+      <span class="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse"><?= $pendingReturnCountNav ?></span>
+    </a>
+    <?php endif; ?>
+
+    <!-- Overdue Notification -->
     <?php if ($overdueCountNav > 0): ?>
-    <a href="?page=history&status=overdue" class="relative p-2 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all">
+    <a href="?page=history&status=overdue" title="เกินกำหนดคืน" class="relative p-2 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all">
       <i class="fas fa-bell"></i>
       <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold"><?= $overdueCountNav ?></span>
     </a>

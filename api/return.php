@@ -44,31 +44,6 @@ try {
     }
     $pdo->commit();
 
-    // Collect info for LINE Notify
-    $returnedIpads = [];
-    $borrowerName = '';
-    
-    foreach ($recordIds as $rid) {
-        $record = $borrowModel->findById((int)$rid);
-        if ($record) {
-            $returnedIpads[] = "- " . $record['device_code'] . " (" . $record['model'] . ")";
-            if (!$borrowerName) {
-                $borrowerName = $record['first_name'] . ' ' . $record['last_name'];
-                if ($record['class_position']) $borrowerName .= " (" . $record['class_position'] . ")";
-            }
-        }
-    }
-    
-    if (!empty($returnedIpads)) {
-        $msg = "\n🔔 มีรายการขอคืน iPad (รออนุมัติ)\n";
-        $msg .= "👨‍🎓 ผู้คืน: " . $borrowerName . "\n";
-        $msg .= "📱 เครื่องที่คืน:\n" . implode("\n", $returnedIpads);
-        if (!empty($notes)) {
-            $msg .= "\n📝 หมายเหตุ: " . $notes;
-        }
-        sendLineNotify($msg);
-    }
-
     jsonResponse([
         'success' => true,
         'message' => 'ส่งคำขอคืนสำเร็จ'
