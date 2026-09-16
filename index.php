@@ -43,6 +43,12 @@ switch ($page) {
         (new DashboardController($pdo))->index();
         break;
 
+    case 'staff_transaction':
+        requireLogin();
+        require_once __DIR__ . '/controllers/StaffTransactionController.php';
+        (new StaffTransactionController($pdo))->index();
+        break;
+
     case 'borrow':
         require_once __DIR__ . '/controllers/BorrowController.php';
         (new BorrowController($pdo))->index();
