@@ -104,7 +104,13 @@ $groupedRecords = $filteredGroupedRecords;
 <!-- Export buttons -->
 <div class="flex justify-between items-center mb-4">
   <p class="text-sm text-slate-500 dark:text-slate-400">พบ <strong class="text-slate-800 dark:text-white"><?= count($groupedRecords) ?></strong> รายการ (จากทั้งหมด <?= count($records) ?> เครื่อง)</p>
-  <div class="flex gap-2">
+  <div class="flex flex-wrap gap-2">
+    <?php if (isAdmin()): ?>
+    <button onclick="clearHistory()" class="flex items-center gap-2 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
+      <i class="fas fa-trash-alt"></i> ล้างประวัติทั้งหมด
+    </button>
+    <div class="w-px h-8 bg-slate-200 dark:bg-slate-700 mx-2 hidden sm:block"></div>
+    <?php endif; ?>
     <button onclick="exportToExcel()" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
       <i class="fas fa-file-excel"></i>Excel
     </button>
@@ -478,6 +484,46 @@ function staffReturnGroup(recordIds) {
             });
         }
     });
+}
+function clearHistory() {
+  Swal.fire({
+    title: 'ยืนยันการล้างข้อมูล?',
+    html: `คุณกำลังจะล้าง <b>ประวัติการยืม-คืน</b> และ <b>Log ทั้งหมด</b><br>พร้อมทั้งรีเซ็ตสถานะ iPad ทุกเครื่องกลับเป็น "ว่าง"<br><br><span class="text-rose-500 font-bold">การกระทำนี้ไม่สามารถกู้คืนได้!</span><br>พิมพ์คำว่า <b>CONFIRM</b> เพื่อยืนยัน`,
+    input: 'text',
+    inputAttributes: {
+      autocapitalize: 'off',
+      autocomplete: 'off'
+    },
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'ล้างข้อมูล',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#f43f5e',
+    preConfirm: (inputValue) => {
+      if (inputValue !== 'CONFIRM') {
+        Swal.showValidationMessage('กรุณาพิมพ์ CONFIRM ให้ถูกต้อง');
+      }
+      return inputValue === 'CONFIRM';
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        title: 'กำลังดำเนินการ...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+      fetch('api/clear_history.php', { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire('สำเร็จ', data.message, 'success').then(() => location.reload());
+        } else {
+          Swal.fire('ผิดพลาด', data.message, 'error');
+        }
+      })
+      .catch(err => Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์', 'error'));
+    }
+  });
 }
 </script>
 
