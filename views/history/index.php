@@ -108,7 +108,7 @@ $groupedRecords = array_values($groupedRecordsMap);
               if (isOverdue($r['due_date']) && $ip['status'] !== 'returned' && $ip['status'] !== 'pending_return') {
                   $hasOverdue = true;
               }
-              if (strpos($ip['notes'], 'ขอยืมต่อ') !== false) {
+              if (!empty($ip['notes']) && strpos($ip['notes'], 'ขอยืมต่อ') !== false) {
                   $hasExtended = true;
               }
           }
@@ -139,9 +139,24 @@ $groupedRecords = array_values($groupedRecordsMap);
           <td class="px-4 py-3">
             <div class="flex flex-wrap gap-1 max-w-[200px]">
               <?php foreach ($r['ipads'] as $ip): ?>
-                <span class="inline-block px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 text-xs rounded-md">
+                <?php
+                   $badgeClass = 'bg-slate-100 border-slate-200 text-slate-700 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300';
+                   if ($ip['status'] === 'returned') $badgeClass = 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-700 dark:text-emerald-300';
+                   if (in_array($ip['status'], ['active', 'overdue'])) $badgeClass = 'bg-orange-50 border-orange-200 text-orange-700 dark:bg-orange-900/30 dark:border-orange-700 dark:text-orange-300';
+                   if ($ip['status'] === 'pending_return') $badgeClass = 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-300';
+                ?>
+                <span class="inline-block px-2 py-1 <?= $badgeClass ?> border text-xs rounded-md">
                   <?= sanitize($ip['device_code']) ?>
                 </span>
+              <?php endforeach; ?>
+            </div>
+            <div class="mt-2 space-y-1">
+              <?php foreach ($r['ipads'] as $ip): ?>
+                  <?php if (in_array($ip['status'], ['active', 'overdue']) && !empty($ip['notes'])): ?>
+                     <div class="text-[10px] text-orange-600 dark:text-orange-400 leading-tight">
+                       <span class="font-bold"><?= sanitize($ip['device_code']) ?>:</span> <?= sanitize($ip['notes']) ?>
+                     </div>
+                  <?php endif; ?>
               <?php endforeach; ?>
             </div>
           </td>
