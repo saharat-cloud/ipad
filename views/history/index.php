@@ -25,7 +25,7 @@ foreach ($records as $r) {
         'due_date' => $r['due_date']
     ];
 }
-}
+
 $groupedRecords = array_values($groupedRecordsMap);
 
 // Filter by group_status
