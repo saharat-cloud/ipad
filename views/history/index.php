@@ -208,7 +208,7 @@ $groupedRecords = $filteredGroupedRecords;
           <td class="px-4 py-3 text-slate-600 dark:text-slate-300"><?= formatDateTimeTH($r['borrowed_at']) ?></td>
           <td class="px-4 py-3 <?= $hasOverdue ? 'text-red-500 font-bold' : 'text-slate-600 dark:text-slate-300' ?>">
             <?= formatDateTimeTH($r['due_date']) ?>
-            <?php if ($hasExtended): ?>
+            <?php if ($hasExtended && $activeCount > 0): ?>
               <span class="block text-[10px] text-orange-500 mt-0.5 font-semibold"><i class="fas fa-clock mr-1"></i>มีการขอยืมต่อ</span>
             <?php endif; ?>
             <?php if ($hasOverdue): ?>
