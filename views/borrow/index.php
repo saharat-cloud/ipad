@@ -220,18 +220,8 @@ document.getElementById('userForm').addEventListener('submit', function(e) {
       
       document.getElementById('borrowUserId').value = userData.id;
 
-      // Update Step Indicators
-      document.getElementById('step1').classList.add('hidden');
-      document.getElementById('step2').classList.remove('hidden');
-      document.getElementById('step-circle-1').classList.replace('bg-indigo-500', 'bg-emerald-500');
-      document.getElementById('step-circle-1').classList.replace('border-indigo-500', 'border-emerald-500');
-      document.getElementById('step-circle-1').innerHTML = '<i class="fas fa-check"></i>';
-      document.getElementById('step-line-1').classList.replace('bg-slate-200', 'bg-emerald-500');
-      document.getElementById('step-circle-2').classList.replace('bg-transparent', 'bg-indigo-500');
-      document.getElementById('step-circle-2').classList.replace('border-slate-300', 'border-indigo-500');
-      document.getElementById('step-circle-2').classList.replace('text-slate-400', 'text-white');
-      
-      setTimeout(() => document.getElementById('ipadBarcode').focus(), 100);
+      // Instead of manual DOM manipulation, let's use the robust goToStep2 function
+      goToStep2();
     } else {
       Swal.fire({icon: 'error', title: 'ข้อผิดพลาด', text: data.message});
     }
@@ -366,25 +356,19 @@ function confirmBorrow() {
   });
 }
 
-function resetStep1() {
-  userData = null;
-  document.getElementById('userBarcode').value = '';
-  document.getElementById('userInfoCard').classList.add('hidden');
-  document.getElementById('userBarcode').focus();
-}
-
 function resetAll() {
   userData = null;
   ipadData = null;
-  document.getElementById('userBarcode').value = '';
+  document.getElementById('userPhone').value = '';
+  document.getElementById('userFirstName').value = '';
+  document.getElementById('userLastName').value = '';
   document.getElementById('ipadBarcode').value = '';
-  document.getElementById('userInfoCard').classList.add('hidden');
   document.getElementById('ipadInfoCard').classList.add('hidden');
   document.getElementById('step2').classList.add('hidden');
   document.getElementById('step3').classList.add('hidden');
   document.getElementById('step1').classList.remove('hidden');
   setStepActive(1);
-  document.getElementById('userBarcode').focus();
+  document.getElementById('userPhone').focus();
   const btn = document.getElementById('confirmBorrowBtn');
   btn.disabled = false;
   btn.innerHTML = '<i class="fas fa-check mr-2"></i>ยืนยันการยืม';
@@ -429,10 +413,7 @@ function openCameraScanner(target) {
     { fps: 10, qrbox: { width: 250, height: 150 } },
     (decodedText) => {
       closeCameraScanner();
-      if (currentScanTarget === 'user') {
-        document.getElementById('userBarcode').value = decodedText;
-        scanUser(decodedText);
-      } else {
+      if (currentScanTarget === 'ipad') {
         document.getElementById('ipadBarcode').value = decodedText;
         scanIpad(decodedText);
       }
