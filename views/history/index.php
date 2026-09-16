@@ -25,13 +25,34 @@ foreach ($records as $r) {
         'due_date' => $r['due_date']
     ];
 }
+}
 $groupedRecords = array_values($groupedRecordsMap);
+
+// Filter by group_status
+$groupFilter = $_GET['group_status'] ?? 'all';
+$filteredGroupedRecords = [];
+foreach ($groupedRecords as $r) {
+    $isComplete = true;
+    foreach ($r['ipads'] as $ip) {
+        if (in_array($ip['status'], ['active', 'overdue', 'pending_return'])) {
+            $isComplete = false;
+            break;
+        }
+    }
+    
+    if ($groupFilter === 'complete' && !$isComplete) continue;
+    if ($groupFilter === 'incomplete' && $isComplete) continue;
+    
+    $filteredGroupedRecords[] = $r;
+}
+$groupedRecords = $filteredGroupedRecords;
 ?>
 
 <!-- Filters -->
 <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm p-5 mb-5">
-  <form method="GET" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+  <form method="GET" id="filterForm" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
     <input type="hidden" name="page" value="history">
+    <input type="hidden" name="group_status" value="<?= sanitize($groupFilter) ?>">
     <div class="relative lg:col-span-2">
       <input type="text" name="search" value="<?= sanitize($filters['search']) ?>"
         placeholder="ค้นหาชื่อ รหัส..."
@@ -58,6 +79,26 @@ $groupedRecords = array_values($groupedRecordsMap);
       </a>
     </div>
   </form>
+</div>
+
+<!-- Group Status Tabs -->
+<div class="flex items-center gap-2 mb-4 bg-white dark:bg-slate-800 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto">
+  <?php
+    function tabUrl($status) {
+        $params = $_GET;
+        $params['group_status'] = $status;
+        return '?' . http_build_query($params);
+    }
+  ?>
+  <a href="<?= tabUrl('all') ?>" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap <?= $groupFilter === 'all' ? 'bg-indigo-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700/50' ?>">
+    <i class="fas fa-list mr-1"></i> ทั้งหมด
+  </a>
+  <a href="<?= tabUrl('complete') ?>" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap <?= $groupFilter === 'complete' ? 'bg-emerald-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700/50' ?>">
+    <i class="fas fa-check-double mr-1"></i> ส่งคืนสำเร็จครบถ้วน
+  </a>
+  <a href="<?= tabUrl('incomplete') ?>" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap <?= $groupFilter === 'incomplete' ? 'bg-orange-500 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700/50' ?>">
+    <i class="fas fa-exclamation-triangle mr-1"></i> ยังส่งคืนไม่ครบ
+  </a>
 </div>
 
 <!-- Export buttons -->
