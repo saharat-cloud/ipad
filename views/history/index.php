@@ -57,10 +57,7 @@ require_once __DIR__ . '/../layout/sidebar.php';
           <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">#</th>
           <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">ผู้ยืม</th>
           <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">iPad</th>
-          <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400 hidden lg:table-cell">เวลายืม</th>
-          <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400 hidden md:table-cell">กำหนดคืน</th>
-          <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400 hidden xl:table-cell">เวลาคืน</th>
-          <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">สถานะ</th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">จัดการ</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
@@ -81,28 +78,15 @@ require_once __DIR__ . '/../layout/sidebar.php';
             <p class="font-semibold text-slate-800 dark:text-white"><?= sanitize($r['device_code']) ?></p>
             <p class="text-xs text-slate-400"><?= sanitize($r['model']) ?></p>
           </td>
-          <td class="px-4 py-3 hidden lg:table-cell text-slate-600 dark:text-slate-300"><?= formatDateTimeTH($r['borrowed_at']) ?></td>
-          <td class="px-4 py-3 hidden md:table-cell <?= isOverdue($r['due_date']) && $r['status'] !== 'returned' ? 'text-red-500 font-bold' : 'text-slate-600 dark:text-slate-300' ?>">
-            <?= formatDateTimeTH($r['due_date']) ?>
-            <?php if (isOverdue($r['due_date']) && $r['status'] !== 'returned'): ?>
-            <span class="block text-xs text-red-500">⚠️ เกิน <?= timeDiffHuman($r['due_date']) ?></span>
-            <?php endif; ?>
-          </td>
-          <td class="px-4 py-3 hidden xl:table-cell text-slate-600 dark:text-slate-300">
-            <?= $r['returned_at'] ? formatDateTimeTH($r['returned_at']) : '-' ?>
-            <?php if ($r['returned_at'] && $r['ret_first']): ?>
-            <p class="text-xs text-slate-400">โดย <?= sanitize($r['ret_first'].' '.$r['ret_last']) ?></p>
-            <?php endif; ?>
-          </td>
           <td class="px-4 py-3">
-            <span class="px-2.5 py-1 rounded-full text-xs font-semibold <?= getStatusClass($r['status']) ?>">
-              <?= getStatusLabel($r['status']) ?>
-            </span>
+            <button onclick="showDetails(this.dataset.info)" data-info="<?= htmlspecialchars(json_encode($r)) ?>" class="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+              <i class="fas fa-file-alt mr-1"></i> รายละเอียด
+            </button>
           </td>
         </tr>
         <?php endforeach; ?>
         <?php if (empty($records)): ?>
-        <tr><td colspan="7" class="text-center py-12 text-slate-400"><i class="fas fa-history text-3xl mb-2 block"></i>ไม่พบรายการ</td></tr>
+        <tr><td colspan="4" class="text-center py-12 text-slate-400"><i class="fas fa-history text-3xl mb-2 block"></i>ไม่พบรายการ</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
@@ -166,6 +150,62 @@ function exportToPDF() {
     headStyles: { fillColor: [99,102,241] },
   });
   doc.save('history_' + new Date().toISOString().slice(0,10) + '.pdf');
+}
+
+function showDetails(dataStr) {
+  try {
+    const r = typeof dataStr === 'string' ? JSON.parse(dataStr) : dataStr;
+    const dt = d => {
+      if(!d) return '-';
+      const x = new Date(d);
+      return x.toLocaleString('th-TH');
+    };
+    
+    let statusClass = 'bg-slate-100 text-slate-700';
+    let statusText = 'ไม่ระบุ';
+    if(r.status === 'active') { statusClass = 'bg-blue-100 text-blue-700'; statusText = 'กำลังยืม'; }
+    if(r.status === 'returned') { statusClass = 'bg-emerald-100 text-emerald-700'; statusText = 'คืนแล้ว'; }
+    if(r.status === 'overdue') { statusClass = 'bg-red-100 text-red-700'; statusText = 'เลยกำหนด'; }
+    
+    let retText = dt(r.returned_at);
+    if (r.returned_at && r.ret_first) retText += ` (โดย ${r.ret_first} ${r.ret_last})`;
+
+    let html = `
+      <div class="text-left space-y-3 mt-4 text-sm">
+        <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+          <span class="text-slate-500">เวลายืม:</span>
+          <span class="font-medium text-slate-800 dark:text-white">${dt(r.borrowed_at)}</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+          <span class="text-slate-500">กำหนดคืน:</span>
+          <span class="font-medium text-slate-800 dark:text-white">${dt(r.due_date)}</span>
+        </div>
+        <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
+          <span class="text-slate-500">เวลาคืน:</span>
+          <span class="font-medium text-slate-800 dark:text-white">${retText}</span>
+        </div>
+        <div class="flex justify-between pb-2">
+          <span class="text-slate-500">สถานะ:</span>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusClass}">${statusText}</span>
+        </div>
+        ${r.notes ? `
+        <div class="pt-2">
+          <span class="text-slate-500 block mb-1">หมายเหตุ:</span>
+          <div class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg text-slate-700 dark:text-slate-300 italic">${r.notes}</div>
+        </div>
+        ` : ''}
+      </div>
+    `;
+
+    Swal.fire({
+      title: 'รายละเอียดการยืม',
+      html: html,
+      confirmButtonText: 'ปิด',
+      confirmButtonColor: '#6366f1',
+      background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
+      color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b'
+    });
+  } catch(e) { console.error(e); }
 }
 </script>
 
