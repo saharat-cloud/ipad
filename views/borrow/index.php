@@ -89,18 +89,20 @@ $availableIpads = $ipadModel->getAll('', 'available');
       </div>
 
       <form id="ipadForm" class="space-y-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-2">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto pr-2">
           <?php if (empty($availableIpads)): ?>
             <div class="col-span-full p-4 text-center text-slate-500 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
               ไม่มี iPad ว่างให้ยืมในขณะนี้
             </div>
           <?php else: ?>
             <?php foreach ($availableIpads as $ipad): ?>
-              <label class="relative flex items-center gap-3 p-4 border-2 border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 transition-all [&:has(input:checked)]:border-indigo-500 [&:has(input:checked)]:bg-indigo-50 dark:[&:has(input:checked)]:bg-indigo-900/20">
-                <input type="radio" name="selectedIpad" value="<?= htmlspecialchars(json_encode($ipad)) ?>" required class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                <div class="flex-1">
-                  <div class="font-bold text-slate-800 dark:text-white"><?= htmlspecialchars($ipad['device_name']) ?></div>
-                  <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">S/N: <?= htmlspecialchars($ipad['serial_number']) ?></div>
+              <label class="relative flex items-start gap-2 p-2 border-2 border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-500 transition-all [&:has(input:checked)]:border-indigo-500 [&:has(input:checked)]:bg-indigo-50 dark:[&:has(input:checked)]:bg-indigo-900/20">
+                <div class="pt-0.5">
+                  <input type="checkbox" name="selectedIpads[]" value="<?= htmlspecialchars(json_encode($ipad)) ?>" class="w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-sm text-slate-800 dark:text-white truncate" title="<?= htmlspecialchars($ipad['device_name']) ?>"><?= htmlspecialchars($ipad['device_name']) ?></div>
+                  <div class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">S/N: <?= htmlspecialchars($ipad['serial_number']) ?></div>
                 </div>
               </label>
             <?php endforeach; ?>
@@ -131,9 +133,12 @@ $availableIpads = $ipadModel->getAll('', 'available');
           <span class="text-slate-500 dark:text-slate-400 text-sm">ผู้ยืม</span>
           <span class="font-semibold text-slate-800 dark:text-white" id="confirmUser"></span>
         </div>
-        <div class="flex items-center justify-between">
-          <span class="text-slate-500 dark:text-slate-400 text-sm">iPad ที่ยืม</span>
-          <span class="font-semibold text-slate-800 dark:text-white" id="confirmIpad"></span>
+        <div class="border-t border-slate-200 dark:border-slate-600 pt-3 mt-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-slate-500 dark:text-slate-400 text-sm">iPad ที่ยืม</span>
+            <span class="font-semibold text-indigo-600 dark:text-indigo-400 text-sm" id="confirmIpadCount"></span>
+          </div>
+          <ul id="confirmIpadList" class="space-y-1.5 max-h-40 overflow-y-auto"></ul>
         </div>
         <div class="border-t border-slate-200 dark:border-slate-600 pt-3">
           <label class="text-slate-500 dark:text-slate-400 text-sm font-medium block mb-2">
@@ -227,15 +232,13 @@ document.getElementById('userForm').addEventListener('submit', function(e) {
 // Handle iPad Selection Submit
 document.getElementById('ipadForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  const selectedRadio = document.querySelector('input[name="selectedIpad"]:checked');
-  if (!selectedRadio) {
-    Swal.fire({icon: 'warning', title: 'กรุณาเลือก iPad', confirmButtonColor: '#6366f1'});
+  const selectedCheckboxes = document.querySelectorAll('input[name="selectedIpads[]"]:checked');
+  if (selectedCheckboxes.length === 0) {
+    Swal.fire({icon: 'warning', title: 'กรุณาเลือก iPad อย่างน้อย 1 เครื่อง', confirmButtonColor: '#6366f1'});
     return;
   }
   
-  const selectedIpad = JSON.parse(selectedRadio.value);
-  ipadData = selectedIpad;
-  
+  ipadData = Array.from(selectedCheckboxes).map(cb => JSON.parse(cb.value));
   goToStep3();
 });
 
@@ -250,7 +253,20 @@ function goToStep3() {
   document.getElementById('step2').classList.add('hidden');
   document.getElementById('step3').classList.remove('hidden');
   document.getElementById('confirmUser').textContent = userData.full_name + ' (' + userData.role_label + ')';
-  document.getElementById('confirmIpad').textContent = ipadData.device_name + ' - ' + ipadData.model;
+  
+  const listEl = document.getElementById('confirmIpadList');
+  listEl.innerHTML = '';
+  ipadData.forEach(ipad => {
+    const li = document.createElement('li');
+    li.className = 'flex justify-between items-center bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700';
+    li.innerHTML = `
+      <span class="font-semibold text-sm text-slate-800 dark:text-white">${ipad.device_name}</span>
+      <span class="text-xs text-slate-500 dark:text-slate-400">${ipad.serial_number}</span>
+    `;
+    listEl.appendChild(li);
+  });
+  document.getElementById('confirmIpadCount').textContent = ipadData.length + ' เครื่อง';
+
   // Default due date: today 16:00
   const now = new Date();
   now.setHours(16, 0, 0, 0);
@@ -267,7 +283,7 @@ function confirmBorrow() {
 
   Swal.fire({
     title: 'ยืนยันการยืม?',
-    html: `<b>${userData.full_name}</b> ยืม <b>${ipadData.device_name}</b>`,
+    html: `<b>${userData.full_name}</b> ต้องการยืม iPad จำนวน <b>${ipadData.length}</b> เครื่อง`,
     icon: 'question',
     showCancelButton: true,
     confirmButtonText: '<i class="fas fa-check mr-1"></i>ยืนยัน',
@@ -284,10 +300,10 @@ function confirmBorrow() {
 
     fetch('api/borrow.php', {
       method: 'POST',
-      headers: {'Content-Type':'application/x-www-form-urlencoded'},
-      body: new URLSearchParams({
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
         user_id: userData.id,
-        ipad_id: ipadData.id,
+        ipad_ids: ipadData.map(i => i.id),
         due_date: dueDate,
         notes: notes
       })
@@ -298,8 +314,8 @@ function confirmBorrow() {
         Swal.fire({
           icon: 'success',
           title: '🎉 ยืม iPad สำเร็จ!',
-          html: `<b>${userData.full_name}</b> ยืม <b>${ipadData.device_name}</b><br><small class="text-gray-500">กำหนดคืน: ${data.due_date}</small>`,
-          confirmButtonText: 'ยืมเครื่องถัดไป',
+          html: `<b>${userData.full_name}</b> ยืม iPad จำนวน <b>${ipadData.length}</b> เครื่อง<br><small class="text-gray-500">กำหนดคืน: ${data.due_date}</small>`,
+          confirmButtonText: 'รับทราบ',
           confirmButtonColor: '#6366f1',
           background: isDark() ? '#1e293b' : '#fff',
           color: isDark() ? '#f1f5f9' : '#1e293b',
@@ -320,8 +336,8 @@ function resetAll() {
   document.getElementById('userPhone').value = '';
   document.getElementById('userFirstName').value = '';
   document.getElementById('userLastName').value = '';
-  const selectedRadio = document.querySelector('input[name="selectedIpad"]:checked');
-  if (selectedRadio) selectedRadio.checked = false;
+  const selectedCheckboxes = document.querySelectorAll('input[name="selectedIpads[]"]:checked');
+  selectedCheckboxes.forEach(cb => cb.checked = false);
   document.getElementById('step2').classList.add('hidden');
   document.getElementById('step3').classList.add('hidden');
   document.getElementById('step1').classList.remove('hidden');
