@@ -7,6 +7,14 @@
         {
             "src": "index.php",
             "use": "vercel-php@0.7.2"
+        },
+        {
+            "src": "assets/**",
+            "use": "@vercel/static"
+        },
+        {
+            "src": "uploads/**",
+            "use": "@vercel/static"
         }
     ],
     "routes": [
