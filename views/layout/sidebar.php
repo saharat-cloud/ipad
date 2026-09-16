@@ -7,7 +7,7 @@ $navItems = [
     ['page'=>'staff_transaction', 'icon'=>'fa-exchange-alt',    'label'=>'ทำรายการยืม-คืน', 'roles'=>['admin','staff']],
     ['page'=>'history',           'icon'=>'fa-history',          'label'=>'ประวัติการยืม',    'roles'=>['admin','staff']],
     ['page'=>'ipads',             'icon'=>'fa-tablet-alt',       'label'=>'จัดการ iPad',     'roles'=>['admin']],
-    ['page'=>'users',             'icon'=>'fa-users',            'label'=>'จัดการผู้ใช้',    'roles'=>['admin']],
+    ['page'=>'users',             'icon'=>'fa-users-cog',        'label'=>'จัดการเจ้าหน้าที่',    'roles'=>['admin']],
     ['page'=>'reports',           'icon'=>'fa-file-chart-column','label'=>'รายงาน',          'roles'=>['admin','staff']],
     ['page'=>'logs',              'icon'=>'fa-scroll',           'label'=>'บันทึกกิจกรรม',   'roles'=>['admin']],
 ];
