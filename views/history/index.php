@@ -12,6 +12,7 @@ foreach ($records as $r) {
         $groupedRecordsMap[$key]['ipads'] = [];
     }
     $groupedRecordsMap[$key]['ipads'][] = [
+        'id' => $r['id'], // borrow_record id
         'device_code' => $r['device_code'],
         'device_name' => $r['device_name'],
         'serial_number' => $r['serial_number'],
@@ -39,6 +40,7 @@ $groupedRecords = array_values($groupedRecordsMap);
     <select name="status" class="border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700/50 rounded-xl px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-indigo-400">
       <option value="">ทุกสถานะ</option>
       <option value="active"   <?= $filters['status'] === 'active'   ? 'selected' : '' ?>>กำลังยืม</option>
+      <option value="pending_return" <?= $filters['status'] === 'pending_return' ? 'selected' : '' ?>>รออนุมัติคืน</option>
       <option value="returned" <?= $filters['status'] === 'returned' ? 'selected' : '' ?>>คืนแล้ว</option>
       <option value="overdue"  <?= $filters['status'] === 'overdue'  ? 'selected' : '' ?>>เกินกำหนด</option>
     </select>
@@ -87,15 +89,19 @@ $groupedRecords = array_values($groupedRecordsMap);
       <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
         <?php foreach ($groupedRecords as $i => $r): ?>
         <?php
-          // Determine if any iPad is overdue
+          // Determine if any iPad is overdue or pending
           $hasOverdue = false;
+          $hasPending = false;
           foreach ($r['ipads'] as $ip) {
-              if (isOverdue($r['due_date']) && $ip['status'] !== 'returned') {
-                  $hasOverdue = true; break;
+              if ($ip['status'] === 'pending_return') {
+                  $hasPending = true;
+              }
+              if (isOverdue($r['due_date']) && $ip['status'] !== 'returned' && $ip['status'] !== 'pending_return') {
+                  $hasOverdue = true;
               }
           }
         ?>
-        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors <?= $hasOverdue ? 'bg-red-50/50 dark:bg-red-900/10' : '' ?>">
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors <?= $hasPending ? 'bg-orange-50/50 dark:bg-orange-900/10 border-l-4 border-orange-400' : ($hasOverdue ? 'bg-red-50/50 dark:bg-red-900/10 border-l-4 border-red-400' : '') ?>">
           <td class="px-4 py-3 text-slate-400"><?= $i+1 ?></td>
           <td class="px-4 py-3">
             <div class="flex items-center gap-2">
@@ -221,12 +227,18 @@ function showDetails(dataStr) {
           <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
     `;
 
+    let pendingIds = [];
     r.ipads.forEach(ip => {
         let statusClass = 'bg-slate-100 text-slate-700';
         let statusText = 'ไม่ระบุ';
         if(ip.status === 'active') { statusClass = 'bg-blue-100 text-blue-700'; statusText = 'กำลังยืม'; }
         if(ip.status === 'returned') { statusClass = 'bg-emerald-100 text-emerald-700'; statusText = 'คืนแล้ว'; }
         if(ip.status === 'overdue') { statusClass = 'bg-red-100 text-red-700'; statusText = 'เลยกำหนด'; }
+        if(ip.status === 'pending_return') { 
+            statusClass = 'bg-orange-100 text-orange-700'; 
+            statusText = 'รออนุมัติ'; 
+            pendingIds.push(ip.id);
+        }
         
         let retInfo = '';
         if (ip.returned_at) {
@@ -250,16 +262,55 @@ function showDetails(dataStr) {
         </div>
       </div>
     `;
+    
+    let showApprove = pendingIds.length > 0;
 
     Swal.fire({
       title: 'รายละเอียดการยืม',
       html: html,
-      confirmButtonText: 'ปิด',
-      confirmButtonColor: '#6366f1',
+      showCancelButton: showApprove,
+      showConfirmButton: true,
+      confirmButtonText: showApprove ? '<i class="fas fa-check-circle mr-1"></i> อนุมัติการคืน' : 'ปิด',
+      cancelButtonText: 'ปิด',
+      confirmButtonColor: showApprove ? '#10b981' : '#6366f1',
+      cancelButtonColor: '#64748b',
       background: document.documentElement.classList.contains('dark') ? '#1e293b' : '#fff',
       color: document.documentElement.classList.contains('dark') ? '#f1f5f9' : '#1e293b'
+    }).then((result) => {
+      if (showApprove && result.isConfirmed) {
+          approveReturns(pendingIds);
+      }
     });
   } catch(e) { console.error(e); }
+}
+
+function approveReturns(recordIds) {
+    Swal.fire({
+        title: 'กำลังดำเนินการ...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+    fetch('api/approve_return.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ record_ids: recordIds })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ',
+                text: 'อนุมัติการคืนเรียบร้อยแล้ว',
+                confirmButtonColor: '#10b981'
+            }).then(() => location.reload());
+        } else {
+            Swal.fire('ข้อผิดพลาด', data.message, 'error');
+        }
+    })
+    .catch(e => {
+        Swal.fire('ข้อผิดพลาด', e.message, 'error');
+    });
 }
 </script>
 
