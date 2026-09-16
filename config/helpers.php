@@ -165,14 +165,9 @@ function prepareExportRows($records) {
             else $statusStr = 'คืนแล้ว';
 
             $noteStr = '';
-            if ($statusStr === 'คืนแล้ว') {
-                // Find the max returned_at
-                $retDates = array_filter(array_column($normalIpads, 'returned_at'));
-                if (!empty($retDates)) {
-                    $maxRet = max($retDates);
-                    $noteStr = 'คืนเมื่อ ' . formatDateShortTH($maxRet);
-                }
-            }
+            // if ($statusStr === 'คืนแล้ว') {
+            //     // ไม่ต้องใส่หมายเหตุตามที่ user ขอ
+            // }
 
             $exportRows[] = [
                 $rowCount++,

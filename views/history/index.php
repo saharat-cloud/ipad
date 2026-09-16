@@ -283,7 +283,8 @@ function exportToPDF() {
   const exportData = <?= json_encode(prepareExportRows($records), JSON_UNESCAPED_UNICODE) ?>;
   const rows = exportData;
   
-  doc.text("บันทึกการยืม-คืน ipad ของวิทยาลัยเทคโนโลยีขอนแก่น", 14, 15);
+  doc.setFontSize(14);
+  doc.text("บันทึกการยืม-คืน ipad ของวิทยาลัยเทคโนโลยีขอนแก่น", doc.internal.pageSize.width / 2, 15, { align: 'center' });
   
   doc.autoTable({
     startY: 20,
