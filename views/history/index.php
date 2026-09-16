@@ -89,9 +89,10 @@ $groupedRecords = array_values($groupedRecordsMap);
       <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
         <?php foreach ($groupedRecords as $i => $r): ?>
         <?php
-          // Determine if any iPad is overdue or pending, and check for partial returns
+          // Determine if any iPad is overdue or pending, and check for partial returns/extensions
           $hasOverdue = false;
           $hasPending = false;
+          $hasExtended = false;
           $activeCount = 0;
           $returnedCount = 0;
           foreach ($r['ipads'] as $ip) {
@@ -106,6 +107,9 @@ $groupedRecords = array_values($groupedRecordsMap);
               }
               if (isOverdue($r['due_date']) && $ip['status'] !== 'returned' && $ip['status'] !== 'pending_return') {
                   $hasOverdue = true;
+              }
+              if (strpos($ip['notes'], 'ขอยืมต่อ') !== false) {
+                  $hasExtended = true;
               }
           }
           $isPartialReturn = ($activeCount > 0 && $returnedCount > 0);
@@ -144,6 +148,9 @@ $groupedRecords = array_values($groupedRecordsMap);
           <td class="px-4 py-3 text-slate-600 dark:text-slate-300"><?= formatDateTimeTH($r['borrowed_at']) ?></td>
           <td class="px-4 py-3 <?= $hasOverdue ? 'text-red-500 font-bold' : 'text-slate-600 dark:text-slate-300' ?>">
             <?= formatDateTimeTH($r['due_date']) ?>
+            <?php if ($hasExtended): ?>
+              <span class="block text-[10px] text-orange-500 mt-0.5 font-semibold"><i class="fas fa-clock mr-1"></i>มีการขอยืมต่อ</span>
+            <?php endif; ?>
             <?php if ($hasOverdue): ?>
             <span class="block text-xs text-red-500">⚠️ เกิน <?= timeDiffHuman($r['due_date']) ?></span>
             <?php endif; ?>
