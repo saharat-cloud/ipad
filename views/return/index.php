@@ -309,7 +309,10 @@ function closeCameraScanner() {
   if (html5QrCode) html5QrCode.stop().catch(() => {});
 }
 
-function showLoader(show) { document.getElementById('pageLoader').classList.toggle('hidden', !show); }
+function showLoader(show) { 
+  const loader = document.getElementById('pageLoader');
+  if (loader) loader.classList.toggle('hidden', !show); 
+}
 function isDark() { return document.documentElement.classList.contains('dark'); }
 </script>
 

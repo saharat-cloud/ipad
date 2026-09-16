@@ -430,7 +430,8 @@ function closeCameraScanner() {
 }
 
 function showLoader(show) {
-  document.getElementById('pageLoader').classList.toggle('hidden', !show);
+  const loader = document.getElementById('pageLoader');
+  if (loader) loader.classList.toggle('hidden', !show);
 }
 
 function isDark() {

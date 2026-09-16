@@ -87,6 +87,14 @@ $kioskNav = [
   <?php endforeach; ?>
 </div>
 
+<!-- Full Screen Loader -->
+<div id="pageLoader" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden">
+  <div class="flex flex-col items-center">
+    <i class="fas fa-circle-notch fa-spin text-white text-5xl mb-4"></i>
+    <p class="text-white font-medium">กำลังบันทึก...</p>
+  </div>
+</div>
+
 <main class="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 animate-fade-in">
 <?php $flash = getFlash(); if ($flash): ?>
 <div id="flashMsg" class="mb-4 p-4 rounded-xl flex items-center gap-3 animate-fade-in
