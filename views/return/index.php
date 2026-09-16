@@ -68,12 +68,37 @@ require_once __DIR__ . '/../layout/kiosk_header.php';
         </div>
 
         <div class="pt-4">
-          <button type="submit" id="confirmReturnBtn" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-500/30">
-            <i class="fas fa-check-circle mr-2"></i>ส่งคำขอคืน iPad
+          <button type="button" id="nextToStep3Btn" onclick="handleStep2Submit()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-500/30">
+            <i class="fas fa-arrow-right mr-2"></i>ดำเนินการต่อ
           </button>
-          <p class="text-center text-xs text-slate-400 mt-3">เมื่อกดส่งคำขอแล้ว กรุณานำเครื่องไปส่งให้เจ้าหน้าที่เพื่อยืนยัน</p>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Step 3: Partial Return (Incomplete) -->
+  <div id="step3" class="hidden animate-slide-in max-w-2xl mx-auto">
+    <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-700/50 p-6 md:p-8">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-orange-100 dark:bg-orange-500/20 text-orange-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 dark:text-white">คืนไม่ครบทุกเครื่อง</h2>
+        <p class="text-slate-500 dark:text-slate-400 mt-2">มีบางเครื่องที่คุณไม่ได้เลือกคืน กรุณาระบุเหตุผลหรือกำหนดวันคืนใหม่</p>
+      </div>
+
+      <div id="unreturnedIpadsContainer" class="space-y-4 mb-6 max-h-72 overflow-y-auto pr-2">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="goBackToStep2()" class="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+          <i class="fas fa-arrow-left mr-2"></i>ย้อนกลับ
+        </button>
+        <button type="button" id="confirmPartialReturnBtn" onclick="submitPartialReturn()" class="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-orange-500/30">
+          <i class="fas fa-check-circle mr-2"></i>ยืนยันส่งข้อมูล
+        </button>
+      </div>
     </div>
   </div>
 
@@ -160,9 +185,7 @@ function renderStep2() {
   });
 }
 
-document.getElementById('returnForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  
+function handleStep2Submit() {
   const checked = document.querySelectorAll('input[name="returnRecords[]"]:checked');
   if (checked.length === 0) {
     Swal.fire({icon: 'warning', title: 'กรุณาเลือก iPad', text: 'เลือก iPad ที่ต้องการคืนอย่างน้อย 1 เครื่อง', confirmButtonColor: '#10b981'});
@@ -172,23 +195,130 @@ document.getElementById('returnForm').addEventListener('submit', function(e) {
   const recordIds = Array.from(checked).map(cb => cb.value);
   const notes = document.getElementById('returnNotes').value;
 
+  if (checked.length < activeBorrows.length) {
+    // Show Step 3
+    const unreturnedBorrows = activeBorrows.filter(br => !recordIds.includes(br.id.toString()));
+    renderStep3(recordIds, notes, unreturnedBorrows);
+  } else {
+    // Return all
+    Swal.fire({
+      title: 'ยืนยันการคืน iPad?',
+      html: `คุณต้องการส่งคำขอคืน iPad จำนวน <b>${recordIds.length}</b> เครื่องใช่หรือไม่?<br><span class="text-sm text-gray-500">สถานะจะเปลี่ยนเป็น "รอตรวจสอบ"</span>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#10b981'
+    }).then(result => {
+      if (result.isConfirmed) {
+        submitReturn(recordIds, notes, []);
+      }
+    });
+  }
+}
+
+function renderStep3(returnIds, returnNotes, unreturnedBorrows) {
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.remove('hidden');
+
+  const container = document.getElementById('unreturnedIpadsContainer');
+  container.innerHTML = '';
+  
+  // Save global state for submission
+  window.pendingReturnData = { returnIds, returnNotes, unreturnedBorrows };
+
+  // Set default due date to tomorrow 16:00
+  const now = new Date();
+  now.setHours(16, 0, 0, 0);
+  if (now < new Date()) now.setDate(now.getDate() + 1);
+  const pad = n => String(n).padStart(2,'0');
+  const defaultDueDate = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T16:00`;
+  const minDate = new Date().toISOString().slice(0,16);
+
+  unreturnedBorrows.forEach((br, index) => {
+    const div = document.createElement('div');
+    div.className = 'p-4 border border-orange-200 dark:border-orange-700/50 bg-orange-50/50 dark:bg-orange-900/10 rounded-xl';
+    div.innerHTML = `
+      <div class="font-bold text-slate-800 dark:text-white mb-2"><i class="fas fa-tablet-alt text-orange-500 mr-2"></i>${br.device_code} (${br.device_name})</div>
+      <div class="space-y-3">
+        <div class="flex gap-4">
+          <label class="flex items-center gap-2 text-sm cursor-pointer text-slate-700 dark:text-slate-300">
+            <input type="radio" name="unreturnedAction_${br.id}" value="extend" onchange="toggleActionDetail(${br.id})" class="text-orange-500 focus:ring-orange-500" checked> ยืมต่อ
+          </label>
+          <label class="flex items-center gap-2 text-sm cursor-pointer text-slate-700 dark:text-slate-300">
+            <input type="radio" name="unreturnedAction_${br.id}" value="reason" onchange="toggleActionDetail(${br.id})" class="text-orange-500 focus:ring-orange-500"> ระบุเหตุผลอื่น
+          </label>
+        </div>
+        <div id="extendContainer_${br.id}" class="block">
+          <input type="datetime-local" id="extendDate_${br.id}" value="${defaultDueDate}" min="${minDate}"
+            class="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-orange-400">
+        </div>
+        <div id="reasonContainer_${br.id}" class="hidden">
+          <input type="text" id="reasonText_${br.id}" placeholder="โปรดระบุเหตุผล (เช่น ทำหาย, ลืมไว้ที่บ้าน)"
+            class="w-full border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-orange-400">
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function toggleActionDetail(id) {
+  const action = document.querySelector(`input[name="unreturnedAction_${id}"]:checked`).value;
+  if (action === 'extend') {
+    document.getElementById(`extendContainer_${id}`).classList.remove('hidden');
+    document.getElementById(`reasonContainer_${id}`).classList.add('hidden');
+  } else {
+    document.getElementById(`extendContainer_${id}`).classList.add('hidden');
+    document.getElementById(`reasonContainer_${id}`).classList.remove('hidden');
+  }
+}
+
+function goBackToStep2() {
+  document.getElementById('step3').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+}
+
+function submitPartialReturn() {
+  const data = window.pendingReturnData;
+  const unreturnedActions = [];
+  
+  for (let br of data.unreturnedBorrows) {
+    const action = document.querySelector(`input[name="unreturnedAction_${br.id}"]:checked`).value;
+    let detail = '';
+    if (action === 'extend') {
+      detail = document.getElementById(`extendDate_${br.id}`).value;
+      if (!detail) {
+        Swal.fire({icon:'warning', title:'ข้อมูลไม่ครบ', text:'กรุณาระบุวันกำหนดคืนสำหรับเครื่อง ' + br.device_code});
+        return;
+      }
+    } else {
+      detail = document.getElementById(`reasonText_${br.id}`).value.trim();
+      if (!detail) {
+        Swal.fire({icon:'warning', title:'ข้อมูลไม่ครบ', text:'กรุณาระบุเหตุผลสำหรับเครื่อง ' + br.device_code});
+        return;
+      }
+    }
+    unreturnedActions.push({ record_id: br.id, action, detail });
+  }
+
   Swal.fire({
-    title: 'ยืนยันการคืน iPad?',
-    html: `คุณต้องการส่งคำขอคืน iPad จำนวน <b>${recordIds.length}</b> เครื่องใช่หรือไม่?<br><span class="text-sm text-gray-500">สถานะจะเปลี่ยนเป็น "รอตรวจสอบ"</span>`,
-    icon: 'question',
+    title: 'ยืนยันข้อมูล?',
+    html: `คุณกำลังคืน <b>${data.returnIds.length}</b> เครื่อง และมีอีก <b>${unreturnedActions.length}</b> เครื่องที่ยังไม่คืน`,
+    icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'ยืนยัน',
+    confirmButtonText: 'ยืนยันส่งข้อมูล',
     cancelButtonText: 'ยกเลิก',
-    confirmButtonColor: '#10b981'
+    confirmButtonColor: '#f97316'
   }).then(result => {
     if (result.isConfirmed) {
-      submitReturn(recordIds, notes);
+      submitReturn(data.returnIds, data.returnNotes, unreturnedActions);
     }
   });
-});
+}
 
-function submitReturn(recordIds, notes) {
-  const btn = document.getElementById('confirmReturnBtn');
+function submitReturn(recordIds, notes, unreturnedActions) {
+  const btn = document.getElementById('confirmPartialReturnBtn') || document.getElementById('nextToStep3Btn');
   btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>กำลังดำเนินการ...';
   btn.disabled = true;
 
@@ -197,7 +327,8 @@ function submitReturn(recordIds, notes) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       record_ids: recordIds,
-      notes: notes
+      notes: notes,
+      unreturned_actions: unreturnedActions
     })
   })
   .then(r => r.json())
@@ -205,27 +336,26 @@ function submitReturn(recordIds, notes) {
     if (data.success) {
       Swal.fire({
         icon: 'success',
-        title: 'ส่งคำขอสำเร็จ!',
-        text: 'กรุณานำเครื่องส่งเจ้าหน้าที่เพื่อยืนยันการคืนในระบบ',
+        title: 'ดำเนินการสำเร็จ!',
+        text: 'ระบบได้บันทึกข้อมูลเรียบร้อยแล้ว',
         confirmButtonText: 'รับทราบ',
         confirmButtonColor: '#10b981'
       }).then(() => {
         resetFlow();
       });
     } else {
-      btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>ส่งคำขอคืน iPad';
       btn.disabled = false;
       Swal.fire({icon: 'error', title: 'ผิดพลาด', text: data.message});
     }
   })
   .catch(err => {
-    btn.innerHTML = '<i class="fas fa-check-circle mr-2"></i>ส่งคำขอคืน iPad';
     btn.disabled = false;
     Swal.fire({icon: 'error', title: 'เกิดข้อผิดพลาด', text: err.message});
   });
 }
 
 function resetFlow() {
+  document.getElementById('step3').classList.add('hidden');
   document.getElementById('step2').classList.add('hidden');
   document.getElementById('step1').classList.remove('hidden');
   document.getElementById('userPhone').value = '';

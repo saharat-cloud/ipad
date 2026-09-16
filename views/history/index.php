@@ -89,10 +89,18 @@ $groupedRecords = array_values($groupedRecordsMap);
       <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
         <?php foreach ($groupedRecords as $i => $r): ?>
         <?php
-          // Determine if any iPad is overdue or pending
+          // Determine if any iPad is overdue or pending, and check for partial returns
           $hasOverdue = false;
           $hasPending = false;
+          $activeCount = 0;
+          $returnedCount = 0;
           foreach ($r['ipads'] as $ip) {
+              if (in_array($ip['status'], ['active', 'overdue'])) {
+                  $activeCount++;
+              }
+              if (in_array($ip['status'], ['returned', 'pending_return'])) {
+                  $returnedCount++;
+              }
               if ($ip['status'] === 'pending_return') {
                   $hasPending = true;
               }
@@ -100,6 +108,7 @@ $groupedRecords = array_values($groupedRecordsMap);
                   $hasOverdue = true;
               }
           }
+          $isPartialReturn = ($activeCount > 0 && $returnedCount > 0);
         ?>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors <?= $hasPending ? 'bg-orange-50/50 dark:bg-orange-900/10 border-l-4 border-orange-400' : ($hasOverdue ? 'bg-red-50/50 dark:bg-red-900/10 border-l-4 border-red-400' : '') ?>">
           <td class="px-4 py-3 text-slate-400"><?= $i+1 ?></td>
@@ -108,7 +117,12 @@ $groupedRecords = array_values($groupedRecordsMap);
               <?php $av = getAvatarUrl($r['avatar']); ?>
               <img src="<?= $av ?>" alt="" class="w-8 h-8 rounded-lg object-cover flex-shrink-0">
               <div>
-                <p class="font-semibold text-slate-800 dark:text-white"><?= sanitize($r['first_name'].' '.$r['last_name']) ?></p>
+                <p class="font-semibold text-slate-800 dark:text-white">
+                  <?= sanitize($r['first_name'].' '.$r['last_name']) ?>
+                  <?php if ($isPartialReturn): ?>
+                    <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300">⚠️ คืนไม่ครบ</span>
+                  <?php endif; ?>
+                </p>
                 <p class="text-xs text-slate-400"><?= sanitize($r['class_position']) ?></p>
               </div>
             </div>

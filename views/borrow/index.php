@@ -212,6 +212,16 @@ document.getElementById('userForm').addEventListener('submit', function(e) {
   .then(data => {
     showLoader(false);
     if (data.success) {
+      if (data.unreturned_count > 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ไม่สามารถยืมได้',
+          text: `คุณมี iPad ที่ยังไม่ได้ส่งคืนจำนวน ${data.unreturned_count} เครื่อง กรุณาส่งคืนก่อนยืมใหม่`,
+          confirmButtonColor: '#6366f1'
+        });
+        return;
+      }
+      
       userData = data.user;
       
       // We don't display user info card in step 1 anymore since it's a form.

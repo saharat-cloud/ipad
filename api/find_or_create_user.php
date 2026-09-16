@@ -52,8 +52,15 @@ if ($user) {
 
 $avatarUrl = getAvatarUrl($user['avatar'] ?? null);
 
+// Check if user has any unreturned iPads
+require_once __DIR__ . '/../models/BorrowRecord.php';
+$borrowModel = new BorrowRecord($pdo);
+$activeBorrows = $borrowModel->getActiveByUser($user['id']);
+$unreturnedCount = count($activeBorrows);
+
 jsonResponse([
     'success' => true,
+    'unreturned_count' => $unreturnedCount,
     'user' => [
         'id'             => $user['id'],
         'user_code'      => $user['user_code'],
