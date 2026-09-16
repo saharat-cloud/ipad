@@ -43,7 +43,7 @@ require_once __DIR__ . '/../layout/kiosk_header.php';
 
       <!-- User Profile Card -->
       <div class="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl mb-4 border border-slate-100 dark:border-slate-600">
-        <img id="userInfoAvatar" src="" alt="" class="w-12 h-12 rounded-xl object-cover">
+        <!-- <img id="userInfoAvatar" src="" alt="" class="w-12 h-12 rounded-xl object-cover"> -->
         <div>
           <h3 class="font-bold text-slate-800 dark:text-white" id="userInfoName"></h3>
           <p class="text-xs text-slate-500 dark:text-slate-400" id="userInfoRole"></p>

@@ -179,10 +179,6 @@ $cData   = array_map('intval', array_column($classStats, 'count'));
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
           <td class="py-3">
             <div class="flex items-center gap-2">
-              <?php
-              $avatarUrl = getAvatarUrl($r['avatar']);
-              ?>
-              <img src="<?= $avatarUrl ?>" alt="" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
               <div>
                 <p class="font-semibold text-slate-800 dark:text-white"><?= sanitize($r['first_name'].' '.$r['last_name']) ?></p>
                 <p class="text-xs text-slate-400"><?= sanitize($r['class_position']) ?></p>

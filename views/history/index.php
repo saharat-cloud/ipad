@@ -119,8 +119,6 @@ $groupedRecords = array_values($groupedRecordsMap);
           <td class="px-4 py-3 text-slate-400"><?= $i+1 ?></td>
           <td class="px-4 py-3">
             <div class="flex items-center gap-2">
-              <?php $av = getAvatarUrl($r['avatar']); ?>
-              <img src="<?= $av ?>" alt="" class="w-8 h-8 rounded-lg object-cover flex-shrink-0">
               <div>
                 <p class="font-semibold text-slate-800 dark:text-white">
                   <?= sanitize($r['first_name'].' '.$r['last_name']) ?>
