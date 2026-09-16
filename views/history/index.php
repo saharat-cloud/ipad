@@ -21,7 +21,8 @@ foreach ($records as $r) {
         'returned_at' => $r['returned_at'],
         'ret_first' => $r['ret_first'],
         'ret_last' => $r['ret_last'],
-        'notes' => $r['notes']
+        'notes' => $r['notes'],
+        'due_date' => $r['due_date']
     ];
 }
 $groupedRecords = array_values($groupedRecordsMap);
@@ -108,7 +109,7 @@ $groupedRecords = array_values($groupedRecordsMap);
               if (isOverdue($r['due_date']) && $ip['status'] !== 'returned' && $ip['status'] !== 'pending_return') {
                   $hasOverdue = true;
               }
-              if (!empty($ip['notes']) && strpos($ip['notes'], 'ขอยืมต่อ') !== false) {
+              if (strpos((string)$ip['notes'], 'ขอยืมต่อ') !== false || $ip['due_date'] !== $r['due_date']) {
                   $hasExtended = true;
               }
           }
@@ -152,9 +153,14 @@ $groupedRecords = array_values($groupedRecordsMap);
             </div>
             <div class="mt-2 space-y-1">
               <?php foreach ($r['ipads'] as $ip): ?>
-                  <?php if (in_array($ip['status'], ['active', 'overdue']) && !empty($ip['notes'])): ?>
+                  <?php if (in_array($ip['status'], ['active', 'overdue']) && (!empty($ip['notes']) || $ip['due_date'] !== $r['due_date'])): ?>
                      <div class="text-[10px] text-orange-600 dark:text-orange-400 leading-tight">
-                       <span class="font-bold"><?= sanitize($ip['device_code']) ?>:</span> <?= sanitize($ip['notes']) ?>
+                       <span class="font-bold"><?= sanitize($ip['device_code']) ?>:</span> 
+                       <?php if (!empty($ip['notes'])): ?>
+                         <?= sanitize($ip['notes']) ?>
+                       <?php elseif ($ip['due_date'] !== $r['due_date']): ?>
+                         [ขอยืมต่อ กำหนดคืนใหม่: <?= formatDateTimeTH($ip['due_date']) ?>]
+                       <?php endif; ?>
                      </div>
                   <?php endif; ?>
               <?php endforeach; ?>
@@ -307,8 +313,15 @@ function showDetails(dataStr) {
         
         let retInfo = '';
         if (ip.returned_at) {
-             retInfo = `<div class="text-[10px] text-slate-500 mt-1">คืนเมื่อ: ${dt(ip.returned_at)} ${ip.ret_first ? `(โดย ${ip.ret_first})` : ''}</div>`;
+             retInfo += `<div class="text-[10px] text-slate-500 mt-1">คืนเมื่อ: ${dt(ip.returned_at)} ${ip.ret_first ? `(โดย ${ip.ret_first})` : ''}</div>`;
         }
+        
+        // Show due_date if it differs from group due_date or if it's explicitly extended
+        let isExtended = ip.notes && ip.notes.includes('ขอยืมต่อ');
+        if (ip.due_date && (ip.due_date !== r.due_date || isExtended) && ip.status === 'active') {
+             retInfo += `<div class="text-[10px] text-orange-600 dark:text-orange-400 mt-1"><i class="fas fa-clock mr-1"></i>กำหนดคืนใหม่: ${dt(ip.due_date)}</div>`;
+        }
+
         let notesInfo = '';
         if (ip.notes) {
              notesInfo = `<div class="text-[11px] text-orange-500 mt-1.5 p-1.5 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-800/50"><i class="fas fa-info-circle mr-1"></i>${ip.notes}</div>`;
