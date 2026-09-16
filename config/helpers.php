@@ -113,6 +113,82 @@ function jsonResponse(array $data, int $code = 200): void {
     exit;
 }
 
+function prepareExportRows($records) {
+    usort($records, function($a, $b) {
+        return strtotime($a['borrowed_at']) - strtotime($b['borrowed_at']);
+    });
+    
+    $groupedMap = [];
+    foreach ($records as $r) {
+        $key = $r['user_id'] . '_' . strtotime($r['borrowed_at']);
+        if (!isset($groupedMap[$key])) {
+            $groupedMap[$key] = $r;
+            $groupedMap[$key]['ipads'] = [];
+        }
+        $groupedMap[$key]['ipads'][] = $r;
+    }
+    
+    $exportRows = [];
+    $rowCount = 1;
+    
+    foreach ($groupedMap as $g) {
+        $normalIpads = [];
+        $extendedIpads = [];
+        
+        foreach ($g['ipads'] as $ip) {
+            if (strpos((string)$ip['notes'], 'ขอยืมต่อ') !== false || $ip['due_date'] !== $g['due_date']) {
+                $extendedIpads[] = $ip;
+            } else {
+                $normalIpads[] = $ip;
+            }
+        }
+        
+        if (count($normalIpads) > 0) {
+            $deviceCodes = implode(', ', array_column($normalIpads, 'device_code'));
+            $statuses = array_unique(array_column($normalIpads, 'status'));
+            
+            if (in_array('overdue', $statuses)) $statusStr = 'เกินกำหนด';
+            elseif (in_array('active', $statuses)) $statusStr = 'กำลังยืม';
+            elseif (in_array('pending_return', $statuses)) $statusStr = 'รออนุมัติคืน';
+            else $statusStr = 'คืนแล้ว';
+
+            $exportRows[] = [
+                $rowCount++,
+                $g['first_name'] . ' ' . $g['last_name'],
+                $deviceCodes,
+                formatDateTimeTH($g['borrowed_at']),
+                formatDateTimeTH($g['due_date']),
+                $statusStr,
+                '',
+                $g['user_code']
+            ];
+        }
+        
+        if (count($extendedIpads) > 0) {
+            $extMap = [];
+            foreach ($extendedIpads as $ep) {
+                $extMap[$ep['due_date']][] = $ep;
+            }
+            foreach ($extMap as $newDueDate => $ips) {
+                $deviceCodes = implode(', ', array_column($ips, 'device_code'));
+                $noteStr = 'จากเดิม ' . formatDateTimeTH($g['due_date']);
+                $exportRows[] = [
+                    $rowCount++,
+                    $g['first_name'] . ' ' . $g['last_name'],
+                    $deviceCodes,
+                    formatDateTimeTH($g['borrowed_at']),
+                    formatDateTimeTH($newDueDate),
+                    'ยืมต่อ',
+                    $noteStr,
+                    $g['user_code']
+                ];
+            }
+        }
+    }
+    
+    return $exportRows;
+}
+
 function getRoleLabel(string $role): string {
     return match($role) {
         'student' => 'นักเรียน',

@@ -259,20 +259,11 @@ $(document).ready(function() {
 });
 
 function exportToExcel() {
-  const rows = [['#','ผู้ยืม','ชั้น/ตำแหน่ง','iPad','รุ่น','เวลายืม','กำหนดคืน','เวลาคืน','สถานะ']];
-  <?php foreach ($records as $i => $r): ?>
-  rows.push([
-    <?= $i+1 ?>,
-    '<?= addslashes($r['first_name'].' '.$r['last_name']) ?>',
-    '<?= addslashes($r['class_position']) ?>',
-    '<?= addslashes($r['device_code']) ?>',
-    '<?= addslashes($r['model']) ?>',
-    '<?= addslashes(formatDateTimeTH($r['borrowed_at'])) ?>',
-    '<?= addslashes(formatDateTimeTH($r['due_date'])) ?>',
-    '<?= addslashes($r['returned_at'] ? formatDateTimeTH($r['returned_at']) : '-') ?>',
-    '<?= addslashes(getStatusLabel($r['status'])) ?>',
-  ]);
-  <?php endforeach; ?>
+  const rows = [['#','ผู้ยืม','iPad','เวลายืม','กำหนดคืน','สถานะ','หมายเหตุ','เบอร์ติดต่อ']];
+  const exportData = <?= json_encode(prepareExportRows($records), JSON_UNESCAPED_UNICODE) ?>;
+  
+  exportData.forEach(row => rows.push(row));
+  
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb, ws, 'ประวัติยืม-คืน');
@@ -289,20 +280,11 @@ function exportToPDF() {
     doc.setFont('Sarabun');
   }
   
-  const rows = [];
-  <?php foreach ($records as $i => $r): ?>
-  rows.push([
-    <?= $i+1 ?>,
-    '<?= addslashes($r['first_name'].' '.$r['last_name']) ?>',
-    '<?= addslashes($r['class_position']) ?>',
-    '<?= addslashes($r['device_code']) ?>',
-    '<?= addslashes(formatDateTimeTH($r['borrowed_at'])) ?>',
-    '<?= addslashes(formatDateTimeTH($r['due_date'])) ?>',
-    '<?= addslashes(getStatusLabel($r['status'])) ?>',
-  ]);
-  <?php endforeach; ?>
+  const exportData = <?= json_encode(prepareExportRows($records), JSON_UNESCAPED_UNICODE) ?>;
+  const rows = exportData;
+  
   doc.autoTable({
-    head: [['#','ผู้ยืม','ชั้น','iPad','เวลายืม','กำหนดคืน','สถานะ']],
+    head: [['#','ผู้ยืม','iPad','เวลายืม','กำหนดคืน','สถานะ','หมายเหตุ','เบอร์ติดต่อ']],
     body: rows,
     styles: { font: 'Sarabun', fontSize: 10 },
     headStyles: { font: 'Sarabun', fillColor: [99,102,241] },
