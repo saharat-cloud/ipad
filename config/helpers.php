@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('Asia/Bangkok');
 function isLoggedIn(): bool {
     return isset($_SESSION['system_user_id']);
 }
