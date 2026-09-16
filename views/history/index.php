@@ -153,13 +153,13 @@ $groupedRecords = array_values($groupedRecordsMap);
             </div>
             <div class="mt-2 space-y-1">
               <?php foreach ($r['ipads'] as $ip): ?>
-                  <?php if (in_array($ip['status'], ['active', 'overdue']) && (!empty($ip['notes']) || $ip['due_date'] !== $r['due_date'])): ?>
+                  <?php if (in_array($ip['status'], ['active', 'overdue'])): ?>
                      <div class="text-[10px] text-orange-600 dark:text-orange-400 leading-tight">
                        <span class="font-bold"><?= sanitize($ip['device_code']) ?>:</span> 
                        <?php if (!empty($ip['notes'])): ?>
                          <?= sanitize($ip['notes']) ?>
-                       <?php elseif ($ip['due_date'] !== $r['due_date']): ?>
-                         [ขอยืมต่อ กำหนดคืนใหม่: <?= formatDateTimeTH($ip['due_date']) ?>]
+                       <?php else: ?>
+                         [กำหนดคืน: <?= formatDateTimeTH($ip['due_date']) ?>]
                        <?php endif; ?>
                      </div>
                   <?php endif; ?>
@@ -316,10 +316,9 @@ function showDetails(dataStr) {
              retInfo += `<div class="text-[10px] text-slate-500 mt-1">คืนเมื่อ: ${dt(ip.returned_at)} ${ip.ret_first ? `(โดย ${ip.ret_first})` : ''}</div>`;
         }
         
-        // Show due_date if it differs from group due_date or if it's explicitly extended
-        let isExtended = ip.notes && ip.notes.includes('ขอยืมต่อ');
-        if (ip.due_date && (ip.due_date !== r.due_date || isExtended) && ip.status === 'active') {
-             retInfo += `<div class="text-[10px] text-orange-600 dark:text-orange-400 mt-1"><i class="fas fa-clock mr-1"></i>กำหนดคืนใหม่: ${dt(ip.due_date)}</div>`;
+        // Always show due_date if it's active or overdue
+        if (ip.due_date && (ip.status === 'active' || ip.status === 'overdue')) {
+             retInfo += `<div class="text-[10px] text-orange-600 dark:text-orange-400 mt-1"><i class="fas fa-clock mr-1"></i>กำหนดคืน: ${dt(ip.due_date)}</div>`;
         }
 
         let notesInfo = '';
