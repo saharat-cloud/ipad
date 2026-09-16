@@ -161,6 +161,7 @@ $cData   = array_map('intval', array_column($classStats, 'count'));
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="<?= APP_URL ?>/assets/js/sarabun.js"></script>
 <script>
 const isDark = document.documentElement.classList.contains('dark');
 const gridC  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
@@ -197,10 +198,18 @@ function exportReportExcel() {
 function exportReportPDF() {
   const {jsPDF} = window.jspdf;
   const doc = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  
+  if (window.SarabunBase64) {
+    doc.addFileToVFS('Sarabun-Regular.ttf', window.SarabunBase64);
+    doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
+    doc.setFont('Sarabun');
+  }
+  
   doc.autoTable({
     head:[['ผู้ยืม','ชั้น','iPad','เวลายืม','กำหนดคืน','สถานะ']],
     body:[<?php foreach ($records as $r): ?>['<?= addslashes($r['first_name'].' '.$r['last_name']) ?>','<?= addslashes($r['class_position']) ?>','<?= addslashes($r['device_code']) ?>','<?= addslashes(formatDateTimeTH($r['borrowed_at'])) ?>','<?= addslashes(formatDateTimeTH($r['due_date'])) ?>','<?= addslashes(getStatusLabel($r['status'])) ?>'],<?php endforeach; ?>],
-    styles:{fontSize:8}, headStyles:{fillColor:[99,102,241]},
+    styles: { font: 'Sarabun', fontSize: 10 },
+    headStyles: { font: 'Sarabun', fillColor: [99,102,241] },
   });
   doc.save('report_' + new Date().toISOString().slice(0,10) + '.pdf');
 }

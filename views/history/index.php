@@ -246,6 +246,7 @@ $groupedRecords = $filteredGroupedRecords;
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="<?= APP_URL ?>/assets/js/sarabun.js"></script>
 <script>
 $(document).ready(function() {
   if ($('#historyTable tbody tr').length > 15) {
@@ -281,6 +282,13 @@ function exportToExcel() {
 function exportToPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  
+  if (window.SarabunBase64) {
+    doc.addFileToVFS('Sarabun-Regular.ttf', window.SarabunBase64);
+    doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
+    doc.setFont('Sarabun');
+  }
+  
   const rows = [];
   <?php foreach ($records as $i => $r): ?>
   rows.push([
@@ -296,8 +304,8 @@ function exportToPDF() {
   doc.autoTable({
     head: [['#','ผู้ยืม','ชั้น','iPad','เวลายืม','กำหนดคืน','สถานะ']],
     body: rows,
-    styles: { fontSize: 8 },
-    headStyles: { fillColor: [99,102,241] },
+    styles: { font: 'Sarabun', fontSize: 10 },
+    headStyles: { font: 'Sarabun', fillColor: [99,102,241] },
   });
   doc.save('history_' + new Date().toISOString().slice(0,10) + '.pdf');
 }
