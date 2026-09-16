@@ -40,6 +40,11 @@ try {
     }
     
     $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+    if ($db_driver === 'pgsql') {
+        $pdo->exec("SET TIME ZONE 'Asia/Bangkok'");
+    } else {
+        $pdo->exec("SET time_zone = '+07:00'");
+    }
 } catch (PDOException $e) {
     if (defined('DOING_INSTALL') && DOING_INSTALL) {
         $pdo = null;
