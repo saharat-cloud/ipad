@@ -7,7 +7,12 @@ class StaffTransactionController {
     }
 
     public function index() {
-        requireRole(['admin', 'staff']);
+        requireLogin();
+        $user = getCurrentUser();
+        if (!$user || !in_array($user['role'], ['admin', 'staff'])) {
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้'];
+            redirect('?page=dashboard');
+        }
         
         $ipadModel = new Ipad($this->pdo);
         $userModel = new User($this->pdo);

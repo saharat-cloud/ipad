@@ -313,7 +313,7 @@ function showDetails(dataStr) {
         
         let retInfo = '';
         if (ip.returned_at) {
-             retInfo += `<div class="text-[10px] text-slate-500 mt-1">คืนเมื่อ: ${dt(ip.returned_at)} ${ip.ret_first ? `(โดย ${ip.ret_first})` : ''}</div>`;
+             retInfo += `<div class="text-[10px] text-slate-500 mt-1">คืนเมื่อ: ${dt(ip.returned_at)} (รับคืนโดยเจ้าหน้าที่)</div>`;
         }
         
         // Always show due_date if it's active or overdue
