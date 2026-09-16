@@ -164,6 +164,16 @@ function prepareExportRows($records) {
             elseif (in_array('pending_return', $statuses)) $statusStr = 'รออนุมัติคืน';
             else $statusStr = 'คืนแล้ว';
 
+            $noteStr = '';
+            if ($statusStr === 'คืนแล้ว') {
+                // Find the max returned_at
+                $retDates = array_filter(array_column($normalIpads, 'returned_at'));
+                if (!empty($retDates)) {
+                    $maxRet = max($retDates);
+                    $noteStr = 'คืนเมื่อ ' . formatDateShortTH($maxRet);
+                }
+            }
+
             $exportRows[] = [
                 $rowCount++,
                 $g['first_name'] . ' ' . $g['last_name'],
@@ -172,7 +182,7 @@ function prepareExportRows($records) {
                 formatDateShortTH($g['borrowed_at']),
                 formatDateShortTH($g['due_date']),
                 $statusStr,
-                ''
+                $noteStr
             ];
         }
         
@@ -185,8 +195,8 @@ function prepareExportRows($records) {
                 $deviceCodes = implode(', ', array_column($ips, 'device_code'));
                 $deviceCodes = wordwrap($deviceCodes, 30, "\n", true);
                 
-                // สำหรับแถวยืมต่อ: กำหนดคืนให้เว้นว่าง (หรือ -), หมายเหตุใส่วันที่จะคืน (ของใหม่) จากเดิม..
-                $noteStr = 'จะคืน ' . formatDateShortTH($newDueDate) . "\n(เดิม " . formatDateShortTH($g['due_date']) . ")";
+                // สำหรับแถวยืมต่อ: หมายเหตุแสดงแค่คำว่า จะคืนวันไหน
+                $noteStr = 'จะคืน ' . formatDateShortTH($newDueDate);
                 $exportRows[] = [
                     $rowCount++,
                     $g['first_name'] . ' ' . $g['last_name'],
