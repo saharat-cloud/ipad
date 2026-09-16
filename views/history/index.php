@@ -123,7 +123,12 @@ $groupedRecords = array_values($groupedRecordsMap);
                     <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300">⚠️ คืนไม่ครบ</span>
                   <?php endif; ?>
                 </p>
-                <p class="text-xs text-slate-400"><?= sanitize($r['class_position']) ?></p>
+                <p class="text-xs text-slate-400">
+                  <i class="fas fa-phone-alt text-[10px] mr-1"></i><?= sanitize($r['user_code']) ?>
+                  <?php if ($r['class_position']): ?>
+                    <span class="mx-1">•</span><?= sanitize($r['class_position']) ?>
+                  <?php endif; ?>
+                </p>
               </div>
             </div>
           </td>
@@ -258,13 +263,18 @@ function showDetails(dataStr) {
         if (ip.returned_at) {
              retInfo = `<div class="text-[10px] text-slate-500 mt-1">คืนเมื่อ: ${dt(ip.returned_at)} ${ip.ret_first ? `(โดย ${ip.ret_first})` : ''}</div>`;
         }
+        let notesInfo = '';
+        if (ip.notes) {
+             notesInfo = `<div class="text-[11px] text-orange-500 mt-1.5 p-1.5 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-100 dark:border-orange-800/50"><i class="fas fa-info-circle mr-1"></i>${ip.notes}</div>`;
+        }
         
         html += `
           <div class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg flex justify-between items-center bg-slate-50 dark:bg-slate-800">
-             <div>
+             <div class="flex-1 min-w-0 pr-2">
                <div class="font-bold text-slate-800 dark:text-white">${ip.device_code}</div>
                <div class="text-[10px] text-slate-500">${ip.device_name}</div>
                ${retInfo}
+               ${notesInfo}
              </div>
              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusClass}">${statusText}</span>
           </div>
