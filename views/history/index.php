@@ -259,7 +259,7 @@ $(document).ready(function() {
 });
 
 function exportToExcel() {
-  const rows = [['#','ผู้ยืม','iPad','เวลายืม','กำหนดคืน','สถานะ','หมายเหตุ','เบอร์ติดต่อ']];
+  const rows = [['#','ผู้ยืม','เบอร์ติดต่อ','iPad','เวลายืม','กำหนดคืน','สถานะ','หมายเหตุ']];
   const exportData = <?= json_encode(prepareExportRows($records), JSON_UNESCAPED_UNICODE) ?>;
   
   exportData.forEach(row => rows.push(row));
@@ -283,8 +283,11 @@ function exportToPDF() {
   const exportData = <?= json_encode(prepareExportRows($records), JSON_UNESCAPED_UNICODE) ?>;
   const rows = exportData;
   
+  doc.text("บันทึกการยืม-คืน ipad ของวิทยาลัยเทคโนโลยีขอนแก่น", 14, 15);
+  
   doc.autoTable({
-    head: [['#','ผู้ยืม','iPad','เวลายืม','กำหนดคืน','สถานะ','หมายเหตุ','เบอร์ติดต่อ']],
+    startY: 20,
+    head: [['#','ผู้ยืม','เบอร์ติดต่อ','iPad','เวลายืม','กำหนดคืน','สถานะ','หมายเหตุ']],
     body: rows,
     styles: { font: 'Sarabun', fontSize: 10 },
     headStyles: { font: 'Sarabun', fillColor: [99,102,241] },

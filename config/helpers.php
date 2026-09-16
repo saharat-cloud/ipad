@@ -59,6 +59,17 @@ function formatDateTimeTH(?string $datetime): string {
     return "$day $month $year $time น.";
 }
 
+function formatDateShortTH(?string $datetime): string {
+    if (!$datetime || $datetime === '0000-00-00 00:00:00') return '-';
+    $dt = new DateTime($datetime);
+    $thMonths = ['', 'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+    $day   = $dt->format('j');
+    $month = $thMonths[(int)$dt->format('n')];
+    $year  = substr((string)((int)$dt->format('Y') + 543), -2);
+    $time  = $dt->format('H:i');
+    return "$day $month $year $time น.";
+}
+
 function formatDateTH(?string $datetime): string {
     if (!$datetime || $datetime === '0000-00-00 00:00:00') return '-';
     $dt = new DateTime($datetime);
@@ -145,6 +156,7 @@ function prepareExportRows($records) {
         
         if (count($normalIpads) > 0) {
             $deviceCodes = implode(', ', array_column($normalIpads, 'device_code'));
+            $deviceCodes = wordwrap($deviceCodes, 30, "\n", true);
             $statuses = array_unique(array_column($normalIpads, 'status'));
             
             if (in_array('overdue', $statuses)) $statusStr = 'เกินกำหนด';
@@ -155,12 +167,12 @@ function prepareExportRows($records) {
             $exportRows[] = [
                 $rowCount++,
                 $g['first_name'] . ' ' . $g['last_name'],
+                $g['user_code'],
                 $deviceCodes,
-                formatDateTimeTH($g['borrowed_at']),
-                formatDateTimeTH($g['due_date']),
+                formatDateShortTH($g['borrowed_at']),
+                formatDateShortTH($g['due_date']),
                 $statusStr,
-                '',
-                $g['user_code']
+                ''
             ];
         }
         
@@ -171,16 +183,19 @@ function prepareExportRows($records) {
             }
             foreach ($extMap as $newDueDate => $ips) {
                 $deviceCodes = implode(', ', array_column($ips, 'device_code'));
-                $noteStr = 'จากเดิม ' . formatDateTimeTH($g['due_date']);
+                $deviceCodes = wordwrap($deviceCodes, 30, "\n", true);
+                
+                // สำหรับแถวยืมต่อ: กำหนดคืนให้เว้นว่าง (หรือ -), หมายเหตุใส่วันที่จะคืน (ของใหม่) จากเดิม..
+                $noteStr = 'จะคืน ' . formatDateShortTH($newDueDate) . "\n(เดิม " . formatDateShortTH($g['due_date']) . ")";
                 $exportRows[] = [
                     $rowCount++,
                     $g['first_name'] . ' ' . $g['last_name'],
+                    $g['user_code'],
                     $deviceCodes,
-                    formatDateTimeTH($g['borrowed_at']),
-                    formatDateTimeTH($newDueDate),
+                    formatDateShortTH($g['borrowed_at']),
+                    '-', 
                     'ยืมต่อ',
-                    $noteStr,
-                    $g['user_code']
+                    $noteStr
                 ];
             }
         }
