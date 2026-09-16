@@ -59,6 +59,15 @@ class BorrowRecord {
         $stmt->execute([$returnedBy, $notes, $notes, $id]);
     }
 
+    public function getActiveByUser(int $userId): array {
+        $stmt = $this->pdo->prepare("
+            SELECT * FROM borrow_records
+            WHERE user_id = ? AND status IN ('active', 'overdue')
+        ");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll();
+    }
+
     public function getAll(array $filters = []): array {
         $sql = "
             SELECT br.*,
