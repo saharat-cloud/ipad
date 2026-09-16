@@ -329,7 +329,7 @@ function confirmBorrow() {
           confirmButtonColor: '#6366f1',
           background: isDark() ? '#1e293b' : '#fff',
           color: isDark() ? '#f1f5f9' : '#1e293b',
-        }).then(() => resetAll());
+        }).then(() => location.reload());
       } else {
         Swal.fire({icon:'error',title:'เกิดข้อผิดพลาด',text:data.message,confirmButtonColor:'#6366f1',
           background: isDark() ? '#1e293b' : '#fff', color: isDark() ? '#f1f5f9' : '#1e293b'});
