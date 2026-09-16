@@ -2,6 +2,28 @@
 $pageTitle = 'ประวัติการยืม-คืน';
 require_once __DIR__ . '/../layout/header.php';
 require_once __DIR__ . '/../layout/sidebar.php';
+
+// Group records by user_id and borrowed_at
+$groupedRecordsMap = [];
+foreach ($records as $r) {
+    $key = $r['user_id'] . '_' . strtotime($r['borrowed_at']);
+    if (!isset($groupedRecordsMap[$key])) {
+        $groupedRecordsMap[$key] = $r;
+        $groupedRecordsMap[$key]['ipads'] = [];
+    }
+    $groupedRecordsMap[$key]['ipads'][] = [
+        'device_code' => $r['device_code'],
+        'device_name' => $r['device_name'],
+        'serial_number' => $r['serial_number'],
+        'model' => $r['model'],
+        'status' => $r['status'],
+        'returned_at' => $r['returned_at'],
+        'ret_first' => $r['ret_first'],
+        'ret_last' => $r['ret_last'],
+        'notes' => $r['notes']
+    ];
+}
+$groupedRecords = array_values($groupedRecordsMap);
 ?>
 
 <!-- Filters -->
@@ -37,7 +59,7 @@ require_once __DIR__ . '/../layout/sidebar.php';
 
 <!-- Export buttons -->
 <div class="flex justify-between items-center mb-4">
-  <p class="text-sm text-slate-500 dark:text-slate-400">พบ <strong class="text-slate-800 dark:text-white"><?= count($records) ?></strong> รายการ</p>
+  <p class="text-sm text-slate-500 dark:text-slate-400">พบ <strong class="text-slate-800 dark:text-white"><?= count($groupedRecords) ?></strong> รายการ (จากทั้งหมด <?= count($records) ?> เครื่อง)</p>
   <div class="flex gap-2">
     <button onclick="exportToExcel()" class="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
       <i class="fas fa-file-excel"></i>Excel
@@ -56,13 +78,24 @@ require_once __DIR__ . '/../layout/sidebar.php';
         <tr>
           <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">#</th>
           <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">ผู้ยืม</th>
-          <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">iPad</th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">เครื่องที่ยืม</th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">เวลายืม</th>
+          <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">กำหนดคืน</th>
           <th class="px-4 py-3 text-left font-semibold text-slate-500 dark:text-slate-400">จัดการ</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
-        <?php foreach ($records as $i => $r): ?>
-        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors <?= $r['status'] === 'overdue' ? 'bg-red-50/50 dark:bg-red-900/10' : '' ?>">
+        <?php foreach ($groupedRecords as $i => $r): ?>
+        <?php
+          // Determine if any iPad is overdue
+          $hasOverdue = false;
+          foreach ($r['ipads'] as $ip) {
+              if (isOverdue($r['due_date']) && $ip['status'] !== 'returned') {
+                  $hasOverdue = true; break;
+              }
+          }
+        ?>
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors <?= $hasOverdue ? 'bg-red-50/50 dark:bg-red-900/10' : '' ?>">
           <td class="px-4 py-3 text-slate-400"><?= $i+1 ?></td>
           <td class="px-4 py-3">
             <div class="flex items-center gap-2">
@@ -75,8 +108,20 @@ require_once __DIR__ . '/../layout/sidebar.php';
             </div>
           </td>
           <td class="px-4 py-3">
-            <p class="font-semibold text-slate-800 dark:text-white"><?= sanitize($r['device_code']) ?></p>
-            <p class="text-xs text-slate-400"><?= sanitize($r['model']) ?></p>
+            <div class="flex flex-wrap gap-1 max-w-[200px]">
+              <?php foreach ($r['ipads'] as $ip): ?>
+                <span class="inline-block px-2 py-1 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 text-xs rounded-md">
+                  <?= sanitize($ip['device_code']) ?>
+                </span>
+              <?php endforeach; ?>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-slate-600 dark:text-slate-300"><?= formatDateTimeTH($r['borrowed_at']) ?></td>
+          <td class="px-4 py-3 <?= $hasOverdue ? 'text-red-500 font-bold' : 'text-slate-600 dark:text-slate-300' ?>">
+            <?= formatDateTimeTH($r['due_date']) ?>
+            <?php if ($hasOverdue): ?>
+            <span class="block text-xs text-red-500">⚠️ เกิน <?= timeDiffHuman($r['due_date']) ?></span>
+            <?php endif; ?>
           </td>
           <td class="px-4 py-3">
             <button onclick="showDetails(this.dataset.info)" data-info="<?= htmlspecialchars(json_encode($r)) ?>" class="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg text-sm font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
@@ -85,8 +130,8 @@ require_once __DIR__ . '/../layout/sidebar.php';
           </td>
         </tr>
         <?php endforeach; ?>
-        <?php if (empty($records)): ?>
-        <tr><td colspan="4" class="text-center py-12 text-slate-400"><i class="fas fa-history text-3xl mb-2 block"></i>ไม่พบรายการ</td></tr>
+        <?php if (empty($groupedRecords)): ?>
+        <tr><td colspan="6" class="text-center py-12 text-slate-400"><i class="fas fa-history text-3xl mb-2 block"></i>ไม่พบรายการ</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
@@ -161,15 +206,6 @@ function showDetails(dataStr) {
       return x.toLocaleString('th-TH');
     };
     
-    let statusClass = 'bg-slate-100 text-slate-700';
-    let statusText = 'ไม่ระบุ';
-    if(r.status === 'active') { statusClass = 'bg-blue-100 text-blue-700'; statusText = 'กำลังยืม'; }
-    if(r.status === 'returned') { statusClass = 'bg-emerald-100 text-emerald-700'; statusText = 'คืนแล้ว'; }
-    if(r.status === 'overdue') { statusClass = 'bg-red-100 text-red-700'; statusText = 'เลยกำหนด'; }
-    
-    let retText = dt(r.returned_at);
-    if (r.returned_at && r.ret_first) retText += ` (โดย ${r.ret_first} ${r.ret_last})`;
-
     let html = `
       <div class="text-left space-y-3 mt-4 text-sm">
         <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
@@ -180,20 +216,38 @@ function showDetails(dataStr) {
           <span class="text-slate-500">กำหนดคืน:</span>
           <span class="font-medium text-slate-800 dark:text-white">${dt(r.due_date)}</span>
         </div>
-        <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-2">
-          <span class="text-slate-500">เวลาคืน:</span>
-          <span class="font-medium text-slate-800 dark:text-white">${retText}</span>
+        <div class="mt-4">
+          <span class="text-slate-500 block mb-2 font-bold">รายการเครื่องที่ยืม:</span>
+          <div class="space-y-2 max-h-40 overflow-y-auto pr-1">
+    `;
+
+    r.ipads.forEach(ip => {
+        let statusClass = 'bg-slate-100 text-slate-700';
+        let statusText = 'ไม่ระบุ';
+        if(ip.status === 'active') { statusClass = 'bg-blue-100 text-blue-700'; statusText = 'กำลังยืม'; }
+        if(ip.status === 'returned') { statusClass = 'bg-emerald-100 text-emerald-700'; statusText = 'คืนแล้ว'; }
+        if(ip.status === 'overdue') { statusClass = 'bg-red-100 text-red-700'; statusText = 'เลยกำหนด'; }
+        
+        let retInfo = '';
+        if (ip.returned_at) {
+             retInfo = `<div class="text-[10px] text-slate-500 mt-1">คืนเมื่อ: ${dt(ip.returned_at)} ${ip.ret_first ? `(โดย ${ip.ret_first})` : ''}</div>`;
+        }
+        
+        html += `
+          <div class="p-2 border border-slate-200 dark:border-slate-700 rounded-lg flex justify-between items-center bg-slate-50 dark:bg-slate-800">
+             <div>
+               <div class="font-bold text-slate-800 dark:text-white">${ip.device_code}</div>
+               <div class="text-[10px] text-slate-500">${ip.device_name}</div>
+               ${retInfo}
+             </div>
+             <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusClass}">${statusText}</span>
+          </div>
+        `;
+    });
+
+    html += `
+          </div>
         </div>
-        <div class="flex justify-between pb-2">
-          <span class="text-slate-500">สถานะ:</span>
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusClass}">${statusText}</span>
-        </div>
-        ${r.notes ? `
-        <div class="pt-2">
-          <span class="text-slate-500 block mb-1">หมายเหตุ:</span>
-          <div class="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg text-slate-700 dark:text-slate-300 italic">${r.notes}</div>
-        </div>
-        ` : ''}
       </div>
     `;
 
