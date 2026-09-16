@@ -137,6 +137,11 @@ switch ($page) {
         (new LogController($pdo))->index();
         break;
 
+    case 'staff_transaction_api':
+        requireLogin();
+        require_once __DIR__ . '/api/staff_transaction.php';
+        break;
+
     default:
         http_response_code(404);
         echo '<div style="text-align:center;padding:50px;font-family:sans-serif"><h1>404</h1><p>ไม่พบหน้าที่ต้องการ</p><a href="?page=dashboard">กลับหน้าหลัก</a></div>';

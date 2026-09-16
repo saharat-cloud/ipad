@@ -164,7 +164,7 @@ function searchUser() {
     const phone = document.getElementById('lend_phone').value.trim();
     if(!phone) return;
     
-    fetch('api/staff_transaction.php?action=search_user', {
+    fetch('?page=staff_transaction_api&action=search_user', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({phone})
@@ -199,7 +199,7 @@ function submitLend() {
         return;
     }
     
-    fetch('api/staff_transaction.php?action=lend', {
+    fetch('?page=staff_transaction_api&action=lend', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({phone, fname, lname, class_position: cpos, due_date: due, notes, ipads})
@@ -218,7 +218,7 @@ function searchBorrows() {
     const query = document.getElementById('return_search').value.trim();
     if(!query) return;
     
-    fetch('api/staff_transaction.php?action=search_borrows', {
+    fetch('?page=staff_transaction_api&action=search_borrows', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({query})
@@ -262,7 +262,7 @@ function submitReturn() {
         return;
     }
     
-    fetch('api/staff_transaction.php?action=return', {
+    fetch('?page=staff_transaction_api&action=return', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({records})

@@ -423,7 +423,7 @@ function staffReturnGroup(recordIds) {
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
-            fetch('api/staff_transaction.php?action=return', {
+            fetch('?page=staff_transaction_api&action=return', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ records: recordIds })
